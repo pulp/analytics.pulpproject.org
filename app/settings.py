@@ -26,7 +26,9 @@ SECRET_KEY = os.environ.get("APP_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [os.environ.get("APP_NAME")]
+# let OpenShift handle that
+# (we cannot get the probes IPs from the environment and IP ranges are not suppoted anyway)
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

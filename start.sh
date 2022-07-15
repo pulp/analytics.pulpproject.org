@@ -1,5 +1,5 @@
 #!/bin/sh
 
-./manage.py makemigrations pulpanalytics
+./manage.py migrate
 
 ./manage.py runserver 0.0.0.0:8080

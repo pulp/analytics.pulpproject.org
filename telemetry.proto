@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+message Telemetry {
+
+  required string system_id = 1;
+
+
+  message OnlineContentApps {
+    optional uint32 processes = 1;
+    optional uint32 hosts = 2;
+  }
+
+  optional OnlineContentApps online_content_apps = 2;
+
+
+  message OnlineWorkers {
+    optional uint32 processes = 1;
+    optional uint32 hosts = 2;
+  }
+
+  optional OnlineWorkers online_workers = 3;
+
+
+  message Component {
+    required string name = 1;
+    required string version = 2;
+  }
+
+  repeated Component components = 4;
+}

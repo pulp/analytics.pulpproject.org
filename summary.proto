@@ -1,0 +1,37 @@
+syntax = "proto2";
+
+message Summary {
+
+  message OnlineContentApps {
+    optional float processes__avg = 1;
+    optional float hosts__avg = 2;
+  }
+
+  optional OnlineContentApps online_content_apps = 1;
+
+
+  message OnlineWorkers {
+    optional float processes__avg = 1;
+    optional float hosts__avg = 2;
+  }
+
+  optional OnlineWorkers online_workers = 2;
+
+
+  message XYComponent {
+    required string name = 1;
+    required string version = 2;
+    required uint32 count = 3;
+  }
+
+  repeated XYComponent xy_component = 3;
+
+
+  message XYZComponent {
+    required string name = 1;
+    required string version = 2;
+    required uint32 count = 3;
+  }
+
+  repeated XYZComponent xyz_component = 4;
+}

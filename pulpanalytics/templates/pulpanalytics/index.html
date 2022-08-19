@@ -1,0 +1,356 @@
+
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js" integrity="sha512-QSkVNOCYLtj73J4hbmVoOV6KVZuMluZlioC+trLpewV8qMjsWqlIQvkn1KGX2StWvPMdWGBqim1xlC8krl1EKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-autocolors"></script>
+</head>
+<style>
+
+.wrapper{
+  height: 600px;
+  width: 800px;
+}
+
+</style>
+<body>
+<div class="wrapper">
+  <canvas id="ansible-versions"></canvas>
+  <canvas id="certguard-versions"></canvas>
+  <canvas id="container-versions"></canvas>
+  <canvas id="cookbook-versions"></canvas>
+  <canvas id="core-versions"></canvas>
+  <canvas id="deb-versions"></canvas>
+  <canvas id="file-versions"></canvas>
+  <canvas id="galaxy-versions"></canvas>
+  <canvas id="gem-versions"></canvas>
+  <canvas id="maven-versions"></canvas>
+  <canvas id="ostree-versions"></canvas>
+  <canvas id="python-versions"></canvas>
+  <canvas id="rpm-versions"></canvas>
+  <canvas id="worker"></canvas>
+  <canvas id="content-app"></canvas>
+</div>
+
+<script>
+
+// Add autocolor support
+const autocolors = window['chartjs-plugin-autocolors'];
+Chart.register(autocolors);
+
+// Ansible Plugin Versions
+const ansible_versions_element = document.getElementById("ansible-versions");
+const ansible_versions_chart = new Chart(ansible_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ ansible_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Ansible Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Certguard Plugin Versions
+const certguard_versions_element = document.getElementById("certguard-versions");
+const certguard_versions_chart = new Chart(certguard_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ certguard_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Certguard Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Container Plugin Versions
+const container_versions_element = document.getElementById("container-versions");
+const container_versions_chart = new Chart(container_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ container_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Container Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Cookbook Plugin Versions
+const cookbook_versions_element = document.getElementById("cookbook-versions");
+const cookbook_versions_chart = new Chart(cookbook_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ cookbook_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Cookbook Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Core Versions
+const core_versions_element = document.getElementById("core-versions");
+const core_versions_chart = new Chart(core_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ core_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Core Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Debian Plugin Versions
+const deb_versions_element = document.getElementById("deb-versions");
+const deb_versions_chart = new Chart(deb_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ deb_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Debian Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// File Plugin Versions
+const file_versions_element = document.getElementById("file-versions");
+const file_versions_chart = new Chart(file_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ file_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "File Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Galaxy NG Plugin Versions
+const galaxy_versions_element = document.getElementById("galaxy-versions");
+const galaxy_versions_chart = new Chart(galaxy_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ galaxy_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Galaxy NG Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Gem Plugin Versions
+const gem_versions_element = document.getElementById("gem-versions");
+const gem_versions_chart = new Chart(gem_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ gem_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Gem Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Maven Plugin Versions
+const maven_versions_element = document.getElementById("maven-versions");
+const maven_versions_chart = new Chart(maven_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ maven_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Maven Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// OSTree Plugin Versions
+const ostree_versions_element = document.getElementById("ostree-versions");
+const ostree_versions_chart = new Chart(ostree_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ ostree_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "OSTree Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Python Plugin Versions
+const python_versions_element = document.getElementById("python-versions");
+const python_versions_chart = new Chart(python_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ python_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Python Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// RPM Plugin Versions
+const rpm_versions_element = document.getElementById("rpm-versions");
+const rpm_versions_chart = new Chart(rpm_versions_element, {
+    type: 'line',
+    data: {
+        datasets: {{ rpm_xy_versions|safe }}
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "RPM Plugin Versions"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Worker Chart
+const worker_element = document.getElementById("worker");
+const worker_chart = new Chart(worker_element, {
+    type: 'line',
+    data: {
+        datasets: [{
+            label: "Mean Processes",
+            data: {{ online_content_apps_processes_avg|safe }}
+        }, {
+            label: "Mean Hosts",
+            data: {{ online_content_apps_hosts_avg|safe }}
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Content Apps"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+// Content App Chart
+const content_app_element = document.getElementById("content-app");
+const content_app_chart = new Chart(content_app_element, {
+    type: 'line',
+    data: {
+        datasets: [{
+            label: "Mean Worker Processes",
+            data: {{ online_workers_processes_avg|safe }}
+        }, {
+            label: "Mean Worker Hosts",
+            data: {{ online_workers_hosts_avg|safe }}
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+              text: "Online Workers"
+            }
+        },
+        scales: {
+            x: { type: 'time' }
+        }
+    }
+});
+
+</script>
+
+</body>
+</html>

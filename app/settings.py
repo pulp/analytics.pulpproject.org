@@ -27,8 +27,12 @@ SECRET_KEY = os.environ.get("APP_KEY")
 DEBUG = True
 
 # let OpenShift handle that
-# (we cannot get the probes IPs from the environment and IP ranges are not suppoted anyway)
+# (we cannot get the probes IPs from the environment and IP ranges are not supported anyway)
 ALLOWED_HOSTS = ['*']
+
+
+# Needed for Django Admin login because OpenShift is not specifying the `Host` header
+CSRF_TRUSTED_ORIGINS = ["dev.analytics.pulpproject.org"]
 
 
 # Application definition

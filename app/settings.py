@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Needed for Django Admin login because OpenShift is not specifying the `Host` header
-CSRF_TRUSTED_ORIGINS = ["https://dev.analytics.pulpproject.org"]
+CSRF_TRUSTED_ORIGINS = ["https://analytics.pulpproject.org"]
 
 
 # Application definition

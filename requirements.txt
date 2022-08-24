@@ -1,4 +1,4 @@
 Django>=4.0,<4.1
-protobuf<3.21
+protobuf<4.22
 psycopg2>=2.9
 semver>=2,<3

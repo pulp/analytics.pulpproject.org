@@ -71,7 +71,11 @@ class Command(BaseCommand):
             xyz_dict = defaultdict(int)
 
             for component in components_qs.filter(name=name):
-                semver_version = semver.parse(component.version)
+                try:
+                    semver_version = semver.parse(component.version)
+                except ValueError:  # Pulp uses x.y.z.dev which is not semver compatible
+                    component.version = component.version.replace('.dev', '-dev')
+                    semver_version = semver.parse(component.version)
                 xy_version = f"{semver_version['major']}.{semver_version['minor']}"
                 xy_dict[xy_version] += 1
                 xyz_dict[component.version] +=1

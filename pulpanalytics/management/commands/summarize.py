@@ -4,8 +4,6 @@ import sys
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
-import semver
-
 from django.core.management.base import BaseCommand
 from django.db.models import Avg
 from google.protobuf.json_format import MessageToJson
@@ -71,12 +69,8 @@ class Command(BaseCommand):
             xyz_dict = defaultdict(int)
 
             for component in components_qs.filter(name=name):
-                try:
-                    semver_version = semver.parse(component.version)
-                except ValueError:  # Pulp uses x.y.z.dev which is not semver compatible
-                    component.version = component.version.replace('.dev', '-dev')
-                    semver_version = semver.parse(component.version)
-                xy_version = f"{semver_version['major']}.{semver_version['minor']}"
+                version_components = "1.2.3".split('.')
+                xy_version = f"{version_components[0]}.{version_components[1]}"
                 xy_dict[xy_version] += 1
                 xyz_dict[component.version] +=1
 

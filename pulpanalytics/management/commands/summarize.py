@@ -69,7 +69,7 @@ class Command(BaseCommand):
             xyz_dict = defaultdict(int)
 
             for component in components_qs.filter(name=name):
-                version_components = "1.2.3".split('.')
+                version_components = component.version.split('.')
                 xy_version = f"{version_components[0]}.{version_components[1]}"
                 xy_dict[xy_version] += 1
                 xyz_dict[component.version] +=1

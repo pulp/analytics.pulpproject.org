@@ -34,4 +34,11 @@ message Summary {
   }
 
   repeated XYZComponent xyz_component = 4;
+
+  message AgeCount {
+    required uint32 age = 1;
+    required uint32 count = 2;
+  }
+
+  repeated AgeCount age_count = 5;
 }

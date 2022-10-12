@@ -4,9 +4,10 @@ from django.db import models
 class System(models.Model):
     system_id = models.UUIDField()
     created = models.DateTimeField(auto_now_add=True)
+    first_seen = models.DateTimeField()
 
     def __str__(self):
-        return f"SystemID={self.id}, Created={self.created}"
+        return f"SystemID={self.system_id}, Created={self.created}"
 
 
 class Component(models.Model):
@@ -15,7 +16,7 @@ class Component(models.Model):
     system = models.ForeignKey(System, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"SystemID={self.id}, Name={self.name}, Version={self.version}"
+        return f"SystemID={self.system.system_id}, Name={self.name}, Version={self.version}"
 
 
 class OnlineContentApps(models.Model):
@@ -27,7 +28,7 @@ class OnlineContentApps(models.Model):
         verbose_name_plural = "online content apps"
 
     def __str__(self):
-        return f"System={self.system.id}, Processes={self.processes}, Hosts={self.hosts}"
+        return f"SystemID={self.system.system_id}, Processes={self.processes}, Hosts={self.hosts}"
 
 
 class OnlineWorkers(models.Model):
@@ -39,7 +40,7 @@ class OnlineWorkers(models.Model):
         verbose_name_plural = "online workers"
 
     def __str__(self):
-        return f"System={self.system.id}, Processes={self.processes}, Hosts={self.hosts}"
+        return f"SystemID={self.system.system_id}, Processes={self.processes}, Hosts={self.hosts}"
 
 
 class DailySummary(models.Model):

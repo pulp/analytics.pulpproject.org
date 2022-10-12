@@ -30,13 +30,67 @@
   <canvas id="rpm-versions"></canvas>
   <canvas id="worker"></canvas>
   <canvas id="content-app"></canvas>
+  <canvas id="demography"></canvas>
+  <canvas id="age-count"></canvas>
 </div>
 
+{{ demography|json_script:"demography-data" }}
+{{ age_count|json_script:"age-count-data" }}
 <script>
 
 // Add autocolor support
 const autocolors = window['chartjs-plugin-autocolors'];
 Chart.register(autocolors);
+
+// Demography
+const demography_element = document.getElementById("demography");
+const demography_data = JSON.parse(document.getElementById("demography-data").textContent);
+const demography_chart = new Chart(demography_element, {
+    type: 'line',
+    data: {
+        datasets: demography_data
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'Demography'
+            }
+        },
+        scales: {
+            x: {
+                type: 'linear',
+                title: {
+                    display: true,
+                    text: 'system age (days)'
+                }
+            },
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// System age
+const age_count_element = document.getElementById("age-count");
+const age_count_data = JSON.parse(document.getElementById("age-count-data").textContent);
+const age_count_chart = new Chart(age_count_element, {
+    type: 'line',
+    data: {
+        datasets: age_count_data
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: "Systems by age"
+            }
+        },
+        scales: {
+            x: { type: 'time' },
+            y: { beginAtZero: true, stacked: true }
+        }
+    }
+});
 
 // Ansible Plugin Versions
 const ansible_versions_element = document.getElementById("ansible-versions");

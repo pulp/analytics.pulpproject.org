@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.core.management import call_command
 
 from pulpanalytics.models import DailySummary, System
+from pulpanalytics.summary_pb2 import Summary
 
 
 SYSTEM_ID = "00000000000000000000000000000000"
@@ -25,12 +26,12 @@ def test_summary_first_day_empty(db):
 def test_summary_empty(db):
     assert not DailySummary.objects.exists()
     DailySummary.objects.create(
-        date=timezone.now() - timezone.timedelta(days=1), summary={}
+        date=timezone.now() - timezone.timedelta(days=1), summary=Summary()
     )
     call_command("summarize")
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
-    assert daily_summary.summary == {}
+    assert daily_summary.summary == Summary()
 
 
 def test_summary_age(monkeypatch, db):
@@ -43,4 +44,4 @@ def test_summary_age(monkeypatch, db):
     call_command("summarize")
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
-    assert daily_summary.summary["ageCount"] == [{"age": 0, "count": 1}]
+    assert daily_summary.summary.age_count == [Summary.AgeCount(age=0, count=1)]

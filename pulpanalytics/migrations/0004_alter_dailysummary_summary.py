@@ -8,7 +8,7 @@ import pulpanalytics.summary_pb2
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pulpanalytics', '0001_initial'),
+        ('pulpanalytics', '0003_system_unique_system_checkin_per_day'),
     ]
 
     operations = [

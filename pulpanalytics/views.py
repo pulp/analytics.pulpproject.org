@@ -63,16 +63,16 @@ class RootView(View):
 
     @staticmethod
     def _add_age_data(context, daily_summary):
-        with suppress(KeyError):
+        with suppress(AttributeError, KeyError):
             timestamp = daily_summary.epoch_ms_timestamp()
             bucket = [0, 0, 0]
-            for item in daily_summary.summary["ageCount"]:
-                if item["age"] <= 1:
-                    bucket[0] += item["count"]
-                elif item["age"] <= 7:
-                    bucket[1] += item["count"]
+            for item in daily_summary.summary.ageCount:
+                if item.age <= 1:
+                    bucket[0] += item.count
+                elif item.age <= 7:
+                    bucket[1] += item.count
                 else:
-                    bucket[2] += item["count"]
+                    bucket[2] += item.count
             context["age_count"][">=8"].append({"x": timestamp, "y": bucket[2]})
             context["age_count"]["2-7"].append({"x": timestamp, "y": bucket[1]})
             context["age_count"]["0-1"].append({"x": timestamp, "y": bucket[0]})
@@ -84,7 +84,7 @@ class RootView(View):
 
         context["demography"] = []
         with suppress(KeyError, AttributeError):
-            raw_data = sorted(daily_summary.summary["ageCount"], key=lambda i: i["age"], reverse=True)
+            raw_data = sorted(daily_summary.summary.ageCount, key=lambda i: i["age"], reverse=True)
             age = raw_data[0]["age"] + 1
             data = []
             # Fill the gaps
@@ -148,13 +148,13 @@ class RootView(View):
     @staticmethod
     def _add_xy_version_for_plugin(context, daily_summary, plugin_name, data_key):
         with suppress(KeyError):
-            xy_components = daily_summary.summary["xyComponent"]
+            xy_components = daily_summary.summary.xy_component
 
-            for item in filter(lambda x: x["name"] == plugin_name, xy_components):
-                context[data_key][item["version"]].append(
+            for item in filter(lambda x: x.name == plugin_name, xy_components):
+                context[data_key][item.version].append(
                     {
                         "x": daily_summary.epoch_ms_timestamp(),
-                        "y": item["count"],
+                        "y": item.count,
                     }
                 )
 

@@ -7,7 +7,7 @@ from datetime import date, datetime, timedelta, timezone
 from django.core.management.base import BaseCommand
 from django.db.models import Avg, Count, Max, Min, OuterRef, Subquery
 from django.db.models.functions import TruncDay
-from google.protobuf.json_format import MessageToJson
+from google.protobuf.json_format import MessageToDict
 
 from pulpanalytics.summary_pb2 import Summary
 from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
@@ -121,18 +121,14 @@ class Command(BaseCommand):
             )
             persistent_systems = systems.filter(age__gte=timedelta(days=1))
 
+            summary = Summary()
             if systems.exists():
-                summary = Summary()
                 self._handle_online_workers(persistent_systems, summary)
                 self._handle_online_content_apps(persistent_systems, summary)
                 self._handle_components(persistent_systems, summary)
                 self._handle_age(systems, summary)
 
-                json_summary = json.loads(MessageToJson(summary))
-            else:
-                json_summary = {}
-
-            DailySummary.objects.create(date=next_summary_date, summary=json_summary)
+            DailySummary.objects.create(date=next_summary_date, summary=summary)
             print(f'Wrote summary for {next_summary_date}')
 
         last_night_midnight = datetime.today().replace(

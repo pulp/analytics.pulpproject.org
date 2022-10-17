@@ -175,3 +175,32 @@ The normal workflow is:
 3. Test your changes on the `https://dev.analytics.pulpproject.org/` site.
 4. Open a PR that merges `dev` into `main`. When this is merged after 5ish minutes your changes
    should show up on `https://analytics.pulpproject.org/`.
+
+
+## Exporting/Importing the database
+
+It can be useful to export data from the production or development sites into a local development
+environment. This is especially useful when developing summarization from production raw data, or
+when developing visualization of production visualized data. This is a two-step process: 1) export
+the data from the production site. 2) import it into your local dev environment.
+
+### Exporting data from a site
+
+This will work for either analytics.pulpproject.org (prod) or dev.analytics.pulpproject.org (dev).
+You will need openshift access to the `./manage.py` environment to be able to do this.
+
+1. Login to openshift with the `oc` client
+2. Select the site you want to use, e.g. production by running: `oc project prod-analytics-pulpproject-org`
+3. Login to the production pod with oc using `oc exec dc/pulpanalytics-app -ti -- bash`
+4. Export the database using `./manage.py dumpdata --output /tmp/data.json pulpanalytics`
+5. Move the file to your local machine by using something like `oc rsync pulpanalytics-app-12-kxttd:/tmp/data.json /tmp/`.
+   Note, the pod name changes each time, so you'll need to get that from openshift when you go to
+   run this command.
+
+### Importing data from a site
+
+1. Apply migrations to the same point as the remote DB using `./manage.py migrate`
+2. Import the data using: `./manage.py loaddata /tmp/data.json`
+
+If testing summarization, you might want to go into the admin interface and delete some recent
+`DailySummary` objects to cause your `./manage.py summarize` to run your local summarization code.

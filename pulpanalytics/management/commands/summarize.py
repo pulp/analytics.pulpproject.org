@@ -82,9 +82,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def _handle_age(systems, summary):
-        age_q = systems.annotate(
-            age=TruncDay("created") - TruncDay("first_seen")
-        ).values("age").annotate(
+        age_q = systems.values("age").annotate(
             count=Count("system_id")
         )
 
@@ -108,13 +106,20 @@ class Command(BaseCommand):
             )
             summary_end_datetime = summary_start_datetime + timedelta(days=1)
 
-            systems = System.objects.filter(created__gte=summary_start_datetime).filter(created__lt=summary_end_datetime)
+            systems = System.objects.annotate(
+                age=TruncDay("created") - TruncDay("first_seen")
+            ).filter(
+                created__gte=summary_start_datetime
+            ).filter(
+                created__lt=summary_end_datetime
+            )
+            persistent_systems = systems.filter(age__gte=timedelta(days=1))
 
             if systems.exists():
                 summary = Summary()
-                self._handle_online_workers(systems, summary)
-                self._handle_online_content_apps(systems, summary)
-                self._handle_components(systems, summary)
+                self._handle_online_workers(persistent_systems, summary)
+                self._handle_online_content_apps(persistent_systems, summary)
+                self._handle_components(persistent_systems, summary)
                 self._handle_age(systems, summary)
 
                 json_summary = json.loads(MessageToJson(summary))

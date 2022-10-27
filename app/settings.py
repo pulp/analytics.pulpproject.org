@@ -84,12 +84,12 @@ WSGI_APPLICATION = "app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_DATABASE"),
-        "USER": os.environ.get("DB_USERNAME"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get("DB_HOST"),
+        "NAME": os.environ.get("DB_DATABASE", "pulpanalytics"),
+        "USER": os.environ.get("DB_USERNAME", "postgres"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": 5432,
-    }
+    },
 }
 
 # Password validation

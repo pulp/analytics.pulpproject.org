@@ -5,7 +5,8 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
 from django.core.management.base import BaseCommand
-from django.db.models import Avg
+from django.db.models import Avg, Count, Max, Min, OuterRef, Subquery
+from django.db.models.functions import TruncDay
 from google.protobuf.json_format import MessageToJson
 
 from pulpanalytics.summary_pb2 import Summary
@@ -23,14 +24,7 @@ class Command(BaseCommand):
         if not System.objects.exists():
             sys.exit("There are no DailySummary entries and no System entries to summarize.")
 
-        earliest_system_datetime = System.objects.order_by('created').first().created
-        first_summary_date = date(
-            year=earliest_system_datetime.year,
-            month=earliest_system_datetime.month,
-            day=earliest_system_datetime.day
-        )
-
-        return first_summary_date
+        return System.objects.order_by('created').first().created.date()
 
     @classmethod
     def _get_next_date_to_summarize(cls):
@@ -86,6 +80,17 @@ class Command(BaseCommand):
                 xyz_component.version = version
                 xyz_component.count = count
 
+    @staticmethod
+    def _handle_age(systems, summary):
+        age_q = systems.values("age").annotate(
+            count=Count("system_id")
+        )
+
+        for entry in age_q:
+            age_count = summary.age_count.add()
+            age_count.age = entry["age"].days
+            age_count.count = entry["count"]
+
     def handle(self, *args, **options):
         while True:
             next_summary_date = self._get_next_date_to_summarize()
@@ -101,13 +106,21 @@ class Command(BaseCommand):
             )
             summary_end_datetime = summary_start_datetime + timedelta(days=1)
 
-            systems = System.objects.filter(created__gte=summary_start_datetime).filter(created__lt=summary_end_datetime)
+            systems = System.objects.annotate(
+                age=TruncDay("created") - TruncDay("first_seen")
+            ).filter(
+                created__gte=summary_start_datetime
+            ).filter(
+                created__lt=summary_end_datetime
+            )
+            persistent_systems = systems.filter(age__gte=timedelta(days=1))
 
             if systems.exists():
                 summary = Summary()
-                self._handle_online_workers(systems, summary)
-                self._handle_online_content_apps(systems, summary)
-                self._handle_components(systems, summary)
+                self._handle_online_workers(persistent_systems, summary)
+                self._handle_online_content_apps(persistent_systems, summary)
+                self._handle_components(persistent_systems, summary)
+                self._handle_age(systems, summary)
 
                 json_summary = json.loads(MessageToJson(summary))
             else:
@@ -118,7 +131,7 @@ class Command(BaseCommand):
 
         last_night_midnight = datetime.today().replace(
             hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
-        delete_older_than_datetime = last_night_midnight- timedelta(days=CLEANUP_AFTER_N_DAYS)
+        delete_older_than_datetime = last_night_midnight - timedelta(days=CLEANUP_AFTER_N_DAYS)
         num, obj_per_type = System.objects.filter(created__lt=delete_older_than_datetime).delete()
 
         if num:

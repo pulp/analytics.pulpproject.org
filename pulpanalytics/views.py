@@ -126,7 +126,7 @@ class RootView(View):
             )
             if fill:
                 new_data[-1]["fill"] = "-1"
-        if fill:
+        if fill and new_data:
             new_data[0]["fill"] = True
         context[data_key] = new_data
 

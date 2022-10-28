@@ -1,8 +1,11 @@
 from collections import defaultdict
 from contextlib import suppress
+from itertools import accumulate
+
 import logging
 
 from django.db import transaction
+from django.db.models import Min
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.decorators import method_decorator
@@ -80,7 +83,59 @@ class RootView(View):
             )
 
     @staticmethod
-    def _label_xy_versions_data_for_plugin(context, data_key):
+    def _add_age_data(context, daily_summary):
+        with suppress(KeyError):
+            timestamp = daily_summary.epoch_ms_timestamp()
+            bucket = [0, 0, 0]
+            for item in daily_summary.summary["ageCount"]:
+                if item["age"] <= 1:
+                    bucket[0] += item["count"]
+                elif item["age"] <= 7:
+                    bucket[1] += item["count"]
+                else:
+                    bucket[2] += item["count"]
+            context["age_count"][">=8"].append({"x": timestamp, "y": bucket[2]})
+            context["age_count"]["2-7"].append({"x": timestamp, "y": bucket[1]})
+            context["age_count"]["0-1"].append({"x": timestamp, "y": bucket[0]})
+
+    @staticmethod
+    def _add_demography(context, daily_summary):
+        def _accumulator(prev, value):
+            return value | {"count" : prev["count"] + value["count"]}
+
+        context["demography"] = []
+        with suppress(KeyError, AttributeError):
+            raw_data = sorted(daily_summary.summary["ageCount"], key=lambda i: i["age"], reverse=True)
+            age = raw_data[0]["age"] + 1
+            data = []
+            # Fill the gaps
+            for item in raw_data:
+                while age > item["age"]:
+                    data.append({"age": age, "count": 0})
+                    age -= 1
+                data.append(item)
+                age -= 1
+
+            context["demography"].append({
+                "label": "count",
+                "data": data,
+                "parsing": {
+                    "xAxisKey": "age",
+                    "yAxisKey": "count",
+                },
+            })
+            context["demography"].append({
+                "label": "accumulated",
+                "data": list(accumulate(data, _accumulator)),
+                "parsing": {
+                    "xAxisKey": "age",
+                    "yAxisKey": "count",
+                },
+                "fill": True,
+            })
+
+    @staticmethod
+    def _label_xy_versions_data_for_plugin(context, data_key, fill=False):
         new_data = []
         for version, data in context[data_key].items():
             new_data.append(
@@ -89,6 +144,10 @@ class RootView(View):
                     "data": data,
                 }
             )
+            if fill:
+                new_data[-1]["fill"] = "-1"
+        if fill:
+            new_data[0]["fill"] = True
         context[data_key] = new_data
 
     @classmethod
@@ -145,6 +204,7 @@ class RootView(View):
             "online_workers_processes_avg": [],
             "online_content_apps_hosts_avg": [],
             "online_content_apps_processes_avg": [],
+            "age_count": defaultdict(list),
             "ansible_xy_versions": defaultdict(list),  # ansible
             "certguard_xy_versions": defaultdict(list),  # certguard
             "container_xy_versions": defaultdict(list),  # container
@@ -159,12 +219,15 @@ class RootView(View):
             "python_xy_versions": defaultdict(list),  # python
             "rpm_xy_versions": defaultdict(list),  # rpm
         }
+        self._add_demography(context, DailySummary.objects.order_by("date").last())
         for daily_summary in DailySummary.objects.order_by('date'):
+            self._add_age_data(context, daily_summary)
             self._add_workers_data(context, daily_summary)
             self._add_content_apps_data(context, daily_summary)
             self._add_xy_versions_data(context, daily_summary)
 
         self._label_xy_versions_data(context)
+        self._label_xy_versions_data_for_plugin(context, "age_count", fill=True)
 
         return HttpResponse(template.render(context, request))
 

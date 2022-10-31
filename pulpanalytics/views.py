@@ -2,7 +2,7 @@ from collections import defaultdict
 from contextlib import suppress
 from itertools import accumulate
 
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Min
 from django.http import HttpResponse
 from django.template import loader
@@ -215,7 +215,7 @@ class RootView(View):
         telemetry = Telemetry()
         telemetry.ParseFromString(request.body)
 
-        with transaction.atomic():
+        with suppress(IntegrityError), transaction.atomic():
             system = System.objects.create(system_id=telemetry.system_id)
             _save_components(system, telemetry)
             _save_online_content_apps(system, telemetry)

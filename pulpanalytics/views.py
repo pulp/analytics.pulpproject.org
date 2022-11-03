@@ -4,8 +4,7 @@ from itertools import accumulate
 
 import logging
 
-from django.db import transaction
-from django.db.models import Min
+from django.db import transaction, IntegrityError
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.decorators import method_decorator
@@ -236,7 +235,7 @@ class RootView(View):
         telemetry.ParseFromString(request.body)
 
         try:
-            with transaction.atomic():
+            with suppress(IntegrityError), transaction.atomic():
                 system = System.objects.create(system_id=telemetry.system_id)
                 _save_components(system, telemetry)
                 _save_online_content_apps(system, telemetry)

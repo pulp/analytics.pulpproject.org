@@ -9,6 +9,15 @@ class System(models.Model):
     def __str__(self):
         return f"SystemID={self.system_id}, Created={self.created}"
 
+    class Meta:
+        constraints=[
+            models.UniqueConstraint(
+                "system_id",
+                models.functions.TruncDay("created"),
+                name="unique_system_checkin_per_day",
+            ),
+        ]
+
 
 class Component(models.Model):
     name = models.TextField()

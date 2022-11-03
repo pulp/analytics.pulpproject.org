@@ -43,16 +43,22 @@ class Command(BaseCommand):
         online_workers_qs = OnlineWorkers.objects.filter(system__in=systems)
         online_workers_stats = online_workers_qs.aggregate(Avg('processes'), Avg('hosts'))
 
-        summary.online_workers.processes__avg = online_workers_stats['processes__avg']
-        summary.online_workers.hosts__avg = online_workers_stats['hosts__avg']
+        try:
+            summary.online_workers.processes__avg = online_workers_stats['processes__avg']
+            summary.online_workers.hosts__avg = online_workers_stats['hosts__avg']
+        except TypeError:
+            pass
 
     @staticmethod
     def _handle_online_content_apps(systems, summary):
         online_content_apps_qs = OnlineContentApps.objects.filter(system__in=systems)
         online_content_apps_stats = online_content_apps_qs.aggregate(Avg('processes'), Avg('hosts'))
 
-        summary.online_content_apps.processes__avg = online_content_apps_stats['processes__avg']
-        summary.online_content_apps.hosts__avg = online_content_apps_stats['hosts__avg']
+        try:
+            summary.online_content_apps.processes__avg = online_content_apps_stats['processes__avg']
+            summary.online_content_apps.hosts__avg = online_content_apps_stats['hosts__avg']
+        except TypeError:
+            pass
 
     @staticmethod
     def _handle_components(systems, summary):

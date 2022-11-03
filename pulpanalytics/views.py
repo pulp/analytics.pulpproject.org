@@ -3,7 +3,6 @@ from contextlib import suppress
 from itertools import accumulate
 
 from django.db import transaction, IntegrityError
-from django.db.models import Min
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.decorators import method_decorator

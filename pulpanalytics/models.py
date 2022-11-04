@@ -13,7 +13,7 @@ class System(models.Model):
         return f"SystemID={self.system_id}, Created={self.created}"
 
     class Meta:
-        constraints=[
+        constraints = [
             models.UniqueConstraint(
                 "system_id",
                 models.functions.TruncDay("created"),
@@ -66,28 +66,19 @@ class DailySummary(models.Model):
         return f"Summary for {self.date}"
 
     def epoch_ms_timestamp(self):
-        return int(self.date.strftime('%s')) * 1000
+        return int(self.date.strftime("%s")) * 1000
 
     def online_workers_hosts_avg_data_point(self):
-        return {
-            "x": self.epoch_ms_timestamp(),
-            "y": self.summary.online_workers.hosts__avg
-        }
+        return {"x": self.epoch_ms_timestamp(), "y": self.summary.online_workers.hosts__avg}
 
     def online_workers_processes_avg_data_point(self):
-        return {
-            "x": self.epoch_ms_timestamp(),
-            "y": self.summary.online_workers.processes__avg
-        }
+        return {"x": self.epoch_ms_timestamp(), "y": self.summary.online_workers.processes__avg}
 
     def online_content_apps_hosts_avg_data_point(self):
-        return {
-            "x": self.epoch_ms_timestamp(),
-            "y": self.summary.online_content_apps.hosts__avg
-        }
+        return {"x": self.epoch_ms_timestamp(), "y": self.summary.online_content_apps.hosts__avg}
 
     def online_content_apps_processes_avg_data_point(self):
         return {
             "x": self.epoch_ms_timestamp(),
-            "y": self.summary.online_content_apps.processes__avg
+            "y": self.summary.online_content_apps.processes__avg,
         }

@@ -28,7 +28,7 @@ DEBUG = True
 
 # let OpenShift handle that
 # (we cannot get the probes IPs from the environment and IP ranges are not supported anyway)
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Needed for Django Admin login because OpenShift is not specifying the `Host` header

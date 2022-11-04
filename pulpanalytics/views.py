@@ -2,7 +2,7 @@ from collections import defaultdict
 from contextlib import suppress
 from itertools import accumulate
 
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.decorators import method_decorator
@@ -11,7 +11,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
 from pulpanalytics.telemetry_pb2 import Telemetry
-
 
 PLUGINS = [
     "ansible",
@@ -33,9 +32,7 @@ PLUGINS = [
 def _save_components(system, telemetry):
     components = []
     for component in telemetry.components:
-        components.append(
-            Component(system=system, name=component.name, version=component.version)
-        )
+        components.append(Component(system=system, name=component.name, version=component.version))
     Component.objects.bulk_create(components)
 
 
@@ -81,7 +78,7 @@ def _add_xy_versions_data(context, daily_summary):
 
 def _add_demography(context, daily_summary):
     def _accumulator(prev, value):
-        return value | {"count" : prev["count"] + value["count"]}
+        return value | {"count": prev["count"] + value["count"]}
 
     context["demography"] = []
     raw_data = sorted(daily_summary.summary.age_count, key=lambda i: i.age, reverse=True)
@@ -98,23 +95,27 @@ def _add_demography(context, daily_summary):
         data.append({"age": item.age, "count": item.count})
         age -= 1
 
-    context["demography"].append({
-        "label": "count",
-        "data": data,
-        "parsing": {
-            "xAxisKey": "age",
-            "yAxisKey": "count",
-        },
-    })
-    context["demography"].append({
-        "label": "accumulated",
-        "data": list(accumulate(data, _accumulator)),
-        "parsing": {
-            "xAxisKey": "age",
-            "yAxisKey": "count",
-        },
-        "fill": True,
-    })
+    context["demography"].append(
+        {
+            "label": "count",
+            "data": data,
+            "parsing": {
+                "xAxisKey": "age",
+                "yAxisKey": "count",
+            },
+        }
+    )
+    context["demography"].append(
+        {
+            "label": "accumulated",
+            "data": list(accumulate(data, _accumulator)),
+            "parsing": {
+                "xAxisKey": "age",
+                "yAxisKey": "count",
+            },
+            "fill": True,
+        }
+    )
 
 
 def _add_age_data(context, daily_summary):
@@ -133,9 +134,7 @@ def _add_age_data(context, daily_summary):
 
 
 def _add_workers_data(context, daily_summary):
-    context["online_workers_hosts_avg"].append(
-        daily_summary.online_workers_hosts_avg_data_point()
-    )
+    context["online_workers_hosts_avg"].append(daily_summary.online_workers_hosts_avg_data_point())
 
     context["online_workers_processes_avg"].append(
         daily_summary.online_workers_processes_avg_data_point()
@@ -152,11 +151,10 @@ def _add_content_apps_data(context, daily_summary):
     )
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class RootView(View):
-
     def get(self, request):
-        template = loader.get_template('pulpanalytics/index.html')
+        template = loader.get_template("pulpanalytics/index.html")
         context = {
             "PLUGINS": PLUGINS,
             "online_workers_hosts_avg": [],
@@ -168,7 +166,7 @@ class RootView(View):
         context.update({f"{plugin}_xy_versions": defaultdict(list) for plugin in PLUGINS})
         _add_demography(context, DailySummary.objects.order_by("date").last())
 
-        for daily_summary in DailySummary.objects.order_by('date'):
+        for daily_summary in DailySummary.objects.order_by("date"):
             _add_age_data(context, daily_summary)
             _add_workers_data(context, daily_summary)
             _add_content_apps_data(context, daily_summary)
@@ -191,6 +189,5 @@ class RootView(View):
             _save_components(system, telemetry)
             _save_online_content_apps(system, telemetry)
             _save_online_workers(system, telemetry)
-
 
         return HttpResponse()

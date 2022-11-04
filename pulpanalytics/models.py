@@ -1,5 +1,8 @@
 from django.db import models
 
+from pulpanalytics.fields import ProtoBufField
+from pulpanalytics.summary_pb2 import Summary
+
 
 class System(models.Model):
     system_id = models.UUIDField()
@@ -54,7 +57,7 @@ class OnlineWorkers(models.Model):
 
 class DailySummary(models.Model):
     date = models.DateField(unique=True)
-    summary = models.JSONField()
+    summary = ProtoBufField(serializer=Summary)
 
     class Meta:
         verbose_name_plural = "daily summaries"
@@ -68,23 +71,23 @@ class DailySummary(models.Model):
     def online_workers_hosts_avg_data_point(self):
         return {
             "x": self.epoch_ms_timestamp(),
-            "y": self.summary["onlineWorkers"]["hostsAvg"]
+            "y": self.summary.online_workers.hosts__avg
         }
 
     def online_workers_processes_avg_data_point(self):
         return {
             "x": self.epoch_ms_timestamp(),
-            "y": self.summary["onlineWorkers"]["processesAvg"]
+            "y": self.summary.online_workers.processes__avg
         }
 
     def online_content_apps_hosts_avg_data_point(self):
         return {
             "x": self.epoch_ms_timestamp(),
-            "y": self.summary["onlineContentApps"]["hostsAvg"]
+            "y": self.summary.online_content_apps.hosts__avg
         }
 
     def online_content_apps_processes_avg_data_point(self):
         return {
             "x": self.epoch_ms_timestamp(),
-            "y": self.summary["onlineContentApps"]["processesAvg"]
+            "y": self.summary.online_content_apps.processes__avg
         }

@@ -1,10 +1,9 @@
 import pytest
-from django.utils import timezone
 from django.core.management import call_command
+from django.utils import timezone
 
 from pulpanalytics.models import DailySummary, System
 from pulpanalytics.summary_pb2 import Summary
-
 
 SYSTEM_ID = "00000000000000000000000000000000"
 
@@ -25,9 +24,7 @@ def test_summary_first_day_empty(db):
 
 def test_summary_empty(db):
     assert not DailySummary.objects.exists()
-    DailySummary.objects.create(
-        date=timezone.now() - timezone.timedelta(days=1), summary=Summary()
-    )
+    DailySummary.objects.create(date=timezone.now() - timezone.timedelta(days=1), summary=Summary())
     call_command("summarize")
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
@@ -38,7 +35,7 @@ def test_summary_age(monkeypatch, db):
     assert not DailySummary.objects.exists()
     yesterday = timezone.now() - timezone.timedelta(days=1)
     with monkeypatch.context() as mp:
-        mp.setattr(timezone, "now", lambda : yesterday)
+        mp.setattr(timezone, "now", lambda: yesterday)
         System.objects.create(system_id=SYSTEM_ID)
 
     call_command("summarize")

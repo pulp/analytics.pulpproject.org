@@ -1,7 +1,7 @@
-import json
-from google.protobuf.json_format import MessageToDict, ParseDict, Parse as ParseJSON
-
 from django.db import models
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.json_format import Parse as ParseJSON
+from google.protobuf.json_format import ParseDict
 
 
 class ProtoBufField(models.JSONField):
@@ -23,7 +23,7 @@ class ProtoBufField(models.JSONField):
 
     def from_db_value(self, value, expression, connection):
         if value is None:
-            return Summary()
+            return self.serializer()
         value = super().from_db_value(value, expression, connection)
         return ParseDict(value, self.serializer())
 

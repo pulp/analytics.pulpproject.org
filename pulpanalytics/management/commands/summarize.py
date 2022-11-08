@@ -2,6 +2,7 @@ import sys
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Avg, Count
 from django.db.models.functions import TruncDay
@@ -113,7 +114,9 @@ class Command(BaseCommand):
                 .filter(created__gte=summary_start_datetime)
                 .filter(created__lt=summary_end_datetime)
             )
-            persistent_systems = systems.filter(age__gte=timedelta(days=1))
+            persistent_systems = systems.filter(
+                age__gte=timedelta(days=settings.PERSISTENT_MIN_AGE_DAYS)
+            )
 
             summary = Summary()
             if systems.exists():

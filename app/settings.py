@@ -17,22 +17,44 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+PULP_DEPLOYMENT = os.environ.get("PULP_DEPLOYMENT")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("APP_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ["APP_KEY"]
 
 # let OpenShift handle that
 # (we cannot get the probes IPs from the environment and IP ranges are not supported anyway)
 ALLOWED_HOSTS = ["*"]
 
 
-# Needed for Django Admin login because OpenShift is not specifying the `Host` header
-CSRF_TRUSTED_ORIGINS = ["https://analytics.pulpproject.org"]
+if PULP_DEPLOYMENT == "prod":
+    DEBUG = False
+    # Needed for Django Admin login because OpenShift is not specifying the `Host` header
+    CSRF_TRUSTED_ORIGINS = ["https://analytics.pulpproject.org"]
+    PERSISTENT_MIN_AGE_DAYS = 1
+    COLLECT_DEV_SYSTEMS = False
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+elif PULP_DEPLOYMENT == "dev":
+    DEBUG = False
+    # Needed for Django Admin login because OpenShift is not specifying the `Host` header
+    CSRF_TRUSTED_ORIGINS = ["https://dev.analytics.pulpproject.org"]
+    PERSISTENT_MIN_AGE_DAYS = 0
+    COLLECT_DEV_SYSTEMS = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+else:
+    assert PULP_DEPLOYMENT is None
+    PERSISTENT_MIN_AGE_DAYS = 1
+    COLLECT_DEV_SYSTEMS = True
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = True
 
 
 # Application definition

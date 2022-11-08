@@ -1,10 +1,10 @@
+import logging
 from collections import defaultdict
 from contextlib import suppress
 from itertools import accumulate
 
-import logging
-
-from django.db import transaction, IntegrityError
+from django.conf import settings
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.decorators import method_decorator
@@ -34,15 +34,17 @@ PLUGINS = [
 ]
 
 
-class LogAndDropData(BaseException):
-    pass
+class LogAndDropData(IntegrityError):
+    def __init__(self, msg):
+        logger.error(msg)
+        super().__init__(msg)
 
 
 def _check_component_version(version):
-    if not version.count('.') == 2:
+    if not version.count(".") == 2:
         raise LogAndDropData(f"The version string {version} does not have two periods.")
 
-    x, y, z = version.split('.')
+    x, y, z = version.split(".")
     for item in [x, y, z]:
         if not item.isdigit():
             raise LogAndDropData(f"The version string {version} does not only contain numbers.")
@@ -51,7 +53,8 @@ def _check_component_version(version):
 def _save_components(system, telemetry):
     components = []
     for component in telemetry.components:
-        _check_component_version(component.version)
+        if not settings.COLLECT_DEV_SYSTEMS:
+            _check_component_version(component.version)
         components.append(Component(system=system, name=component.name, version=component.version))
     Component.objects.bulk_create(components)
 
@@ -204,13 +207,10 @@ class RootView(View):
         telemetry = Telemetry()
         telemetry.ParseFromString(request.body)
 
-        try:
-            with suppress(IntegrityError), transaction.atomic():
-                system = System.objects.create(system_id=telemetry.system_id)
-                _save_components(system, telemetry)
-                _save_online_content_apps(system, telemetry)
-                _save_online_workers(system, telemetry)
-        except LogAndDropData as exc:
-            logger.error(f"Dropping data due a validation error: {exc.args[0]}\n{telemetry}")
+        with suppress(IntegrityError), transaction.atomic():
+            system = System.objects.create(system_id=telemetry.system_id)
+            _save_components(system, telemetry)
+            _save_online_content_apps(system, telemetry)
+            _save_online_workers(system, telemetry)
 
         return HttpResponse()

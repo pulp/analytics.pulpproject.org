@@ -58,3 +58,6 @@ jobs:
         APP_KEY: "secret"
       run: |
         pytest
+    - name: Deployment Checks
+      run: |
+        make deployment-checks

@@ -1,7 +1,9 @@
+import logging
 from collections import defaultdict
 from contextlib import suppress
 from itertools import accumulate
 
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.template import loader
@@ -11,6 +13,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
 from pulpanalytics.telemetry_pb2 import Telemetry
+
+logger = logging.getLogger(__name__)
+
 
 PLUGINS = [
     "ansible",
@@ -29,9 +34,27 @@ PLUGINS = [
 ]
 
 
+class LogAndDropData(IntegrityError):
+    def __init__(self, msg):
+        logger.error(msg)
+        super().__init__(msg)
+
+
+def _check_component_version(version):
+    if not version.count(".") == 2:
+        raise LogAndDropData(f"The version string {version} does not have two periods.")
+
+    x, y, z = version.split(".")
+    for item in [x, y, z]:
+        if not item.isdigit():
+            raise LogAndDropData(f"The version string {version} does not only contain numbers.")
+
+
 def _save_components(system, telemetry):
     components = []
     for component in telemetry.components:
+        if not settings.COLLECT_DEV_SYSTEMS:
+            _check_component_version(component.version)
         components.append(Component(system=system, name=component.name, version=component.version))
     Component.objects.bulk_create(components)
 

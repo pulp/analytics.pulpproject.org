@@ -2,4 +2,4 @@
 
 ./manage.py migrate
 
-./manage.py runserver 0.0.0.0:8080
+gunicorn -b "0.0.0.0:8080" app.wsgi

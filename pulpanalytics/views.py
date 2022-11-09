@@ -104,6 +104,8 @@ def _add_demography(context, daily_summary):
         return value | {"count": prev["count"] + value["count"]}
 
     context["demography"] = []
+    if daily_summary is None:
+        return
     raw_data = sorted(daily_summary.summary.age_count, key=lambda i: i.age, reverse=True)
     if not raw_data:
         # No data available

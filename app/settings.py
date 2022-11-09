@@ -35,9 +35,6 @@ if PULP_DEPLOYMENT == "prod":
     CSRF_TRUSTED_ORIGINS = ["https://analytics.pulpproject.org"]
     PERSISTENT_MIN_AGE_DAYS = 1
     COLLECT_DEV_SYSTEMS = False
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
 
 elif PULP_DEPLOYMENT == "dev":
     DEBUG = False
@@ -45,9 +42,6 @@ elif PULP_DEPLOYMENT == "dev":
     CSRF_TRUSTED_ORIGINS = ["https://dev.analytics.pulpproject.org"]
     PERSISTENT_MIN_AGE_DAYS = 0
     COLLECT_DEV_SYSTEMS = True
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
 
 else:
     assert PULP_DEPLOYMENT is None

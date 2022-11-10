@@ -210,6 +210,7 @@ class RootView(View):
             context["plugin_xy_versions"][plugin] = context.pop(f"{plugin}_xy_versions")
         _label_data_for_key(context, "age_count", fill=True)
 
+        context["deployment"] = settings.PULP_DEPLOYMENT
         context["revision"] = _get_git_revision()
 
         return HttpResponse(template.render(context, request))

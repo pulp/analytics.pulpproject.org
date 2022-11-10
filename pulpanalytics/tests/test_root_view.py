@@ -8,3 +8,5 @@ def test_empty_summary(db, rf):
     response = RootView.as_view()(request)
 
     assert response.status_code == 200, response.status_code
+    assert b"<title>" in response.content
+    assert b'<meta name="revision"' in response.content

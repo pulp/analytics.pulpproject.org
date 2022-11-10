@@ -101,7 +101,7 @@ WSGI_APPLICATION = "app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_DATABASE", "pulpanalytics"),
+        "NAME": os.environ.get("DB_DATABASE", "postgres"),
         "USER": os.environ.get("DB_USERNAME", "postgres"),
         "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
         "HOST": os.environ.get("DB_HOST", "localhost"),

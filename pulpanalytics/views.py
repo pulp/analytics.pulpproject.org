@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 from contextlib import suppress
+from functools import lru_cache
 from itertools import accumulate
 
 from django.conf import settings
@@ -10,6 +11,7 @@ from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from git import Repo
 
 from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
 from pulpanalytics.telemetry_pb2 import Telemetry
@@ -38,6 +40,11 @@ class LogAndDropData(IntegrityError):
     def __init__(self, msg):
         logger.error(msg)
         super().__init__(msg)
+
+
+@lru_cache(maxsize=1)
+def _get_git_revision():
+    return Repo().commit().hexsha
 
 
 def _check_component_version(version):
@@ -202,6 +209,8 @@ class RootView(View):
             _label_data_for_key(context, f"{plugin}_xy_versions")
             context["plugin_xy_versions"][plugin] = context.pop(f"{plugin}_xy_versions")
         _label_data_for_key(context, "age_count", fill=True)
+
+        context["revision"] = _get_git_revision()
 
         return HttpResponse(template.render(context, request))
 

@@ -22,7 +22,7 @@ PULP_DEPLOYMENT = os.environ.get("PULP_DEPLOYMENT")
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["APP_KEY"]
+SECRET_KEY = os.environ.get("APP_KEY")
 
 # let OpenShift handle that
 # (we cannot get the probes IPs from the environment and IP ranges are not supported anyway)

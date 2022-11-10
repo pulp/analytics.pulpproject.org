@@ -100,7 +100,7 @@ provide the database locally with the commands below (taken from
 Fetch the container with: `podman pull docker.io/library/postgres`. Afterwards you can see it listed
 with `podman images`.
 
-Start the container with: `podman run -dt --name my-postgres -e POSTGRES_PASSWORD=1234 -p 5432:5432 postgres`
+Start the container with: `podman run -dt --name my-postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres`
 
 Connect to the db with `psql` using `podman exec -it my-postgres bash`. Then connect with user
 `postgres` which is the default of the postgres container. Here's a full example:
@@ -116,21 +116,28 @@ Did not find any relations.
 postgres=#
 ```
 
-4. Configure the Python App to Use Postgresql
+4. Set the `APP_KEY`
 
-By default, the app uses environment variable for [database settings](https://github.com/pulp/analytics.pulpproject.org/blob/01c491eee833c8dc3513e3b56c2f349511bb162e/app/settings.py#L86-L90)
-and [`SECRET_KEY`](https://github.com/pulp/analytics.pulpproject.org/blob/01c491eee833c8dc3513e3b56c2f349511bb162e/app/settings.py#L24).
-Set these environment variables like this:
+The app uses an environment variable `APP_KEY` to specify the Django `SECRET_KEY` [here](https://github.com/pulp/analytics.pulpproject.org/blob/dev/app/settings.py#L25).
+You need to set a random string as the `APP_KEY`.
 
-```
-export DB_DATABASE="postgres"
-export DB_USERNAME="postgres"
-export DB_PASSWORD="1234"
-export DB_HOST="localhost"
+```shell
 export APP_KEY="ceb0c58c-5789-499a-881f-410aec5e1003"
 ```
 
-The APP_KEY is just a random string here.
+Note: The `APP_KEY` is just a random string here.
+
+If using the default values of the postgresql image this isn't needed, but optionally, if you want
+to specify db connection info that also happens as environment variables [here](https://github.com/pulp/analytics.pulpproject.org/blob/dev/app/settings.py#L104-L107).
+If you did want to set them you could do it like:
+
+```shell
+export DB_DATABASE="postgres"
+export DB_USERNAME="postgres"
+export DB_PASSWORD="postgres"
+export DB_HOST="localhost"
+```
+
 
 5. Apply Migrations
 

@@ -8,6 +8,7 @@ class System(models.Model):
     system_id = models.UUIDField()
     created = models.DateTimeField(auto_now_add=True)
     first_seen = models.DateTimeField()
+    postgresql_version = models.PositiveIntegerField()
 
     def __str__(self):
         return f"SystemID={self.system_id}, Created={self.created}"

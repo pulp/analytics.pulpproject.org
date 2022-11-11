@@ -23,11 +23,18 @@
   <canvas id="content-app"></canvas>
   <canvas id="demography"></canvas>
   <canvas id="age-count"></canvas>
+  <canvas id="postgresql-version"></canvas>
 </div>
 
 {{ demography|json_script:"demography-data" }}
+
 {{ age_count|json_script:"age-count-data" }}
+
 {{ plugin_xy_versions|json_script:"plugins-data" }}
+
+{{ postgresql_versions_count|json_script:"postgresql-version-count-data" }}
+
+{{ postgresql_versions_labels|json_script:"postgresql-version-label-data" }}
 
 <script>
 
@@ -125,7 +132,7 @@ const worker_chart = new Chart(worker_element, {
         plugins: {
             title: {
                 display: true,
-              text: "Content Apps"
+                text: "Content Apps"
             }
         },
         scales: {
@@ -151,12 +158,37 @@ const content_app_chart = new Chart(content_app_element, {
         plugins: {
             title: {
                 display: true,
-              text: "Online Workers"
+                text: "Online Workers"
             }
         },
         scales: {
             x: { type: 'time' }
         }
+    }
+});
+
+// Postgresql Version Chart
+const postgresql_version_element = document.getElementById("postgresql-version");
+const postgresql_version_count_data = JSON.parse(document.getElementById("postgresql-version-count-data").textContent);
+const postgresql_version_label_data = JSON.parse(document.getElementById("postgresql-version-label-data").textContent);
+const postgresql_version_chart = new Chart(postgresql_version_element, {
+    type: 'pie',
+    data: {
+        datasets: [{
+            data: postgresql_version_count_data,
+        }],
+        labels: postgresql_version_label_data
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: "Postgresql Versions"
+            },
+            autocolors: {
+                mode: 'data'
+            }
+        },
     }
 });
 

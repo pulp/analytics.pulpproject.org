@@ -149,10 +149,40 @@ Apply migrations with `./manage.py migrate`
 
 7. Run the server
 
-`./manage.py runserver`
+`./manage.py runserver 0.0.0.0:8000`
 
 You can then load the page at `http://127.0.0.1:8000/` or the Admin site at
 `http://127.0.0.1:8000/admin/`.
+
+Note, the `0.0.0.0:8000` is optional if you only want to receive requests on localhost, but with
+pulp typically running in an [oci_env](https://github.com/pulp/oci_env) environment, you likely want
+to have it listen on all interfaces.
+
+
+## Testing with a Local Pulp Dev Install
+
+Right now to test a local Pulp installation, you need to in-code modify Pulp to post data to your
+local telemetry installation. This is done by applying this diff:
+
+```
+diff --git a/pulpcore/app/tasks/telemetry.py b/pulpcore/app/tasks/telemetry.py
+index 3ca9c0fb4..e4c2c30f1 100644
+--- a/pulpcore/app/tasks/telemetry.py
++++ b/pulpcore/app/tasks/telemetry.py
+@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
+ 
+ 
+ PRODUCTION_URL = "https://analytics.pulpproject.org/"
+-DEV_URL = "https://dev.analytics.pulpproject.org/"
++# DEV_URL = "https://dev.analytics.pulpproject.org/"
++DEV_URL = "http://host.containers.internal:8000/"
+ 
+ 
+ def get_telemetry_posting_url():
+```
+
+Additionally, ensure your telemetry environment is listening on all interfaces by having
+`0.0.0.0:8000` in your `runserver` command, e.g. `./manage.py runserver 0.0.0.0:8000`.
 
 
 ## Summarizing Data

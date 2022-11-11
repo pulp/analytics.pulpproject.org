@@ -45,7 +45,7 @@ elif PULP_DEPLOYMENT == "dev":
 
 else:
     assert PULP_DEPLOYMENT is None
-    PERSISTENT_MIN_AGE_DAYS = 1
+    PERSISTENT_MIN_AGE_DAYS = 0
     COLLECT_DEV_SYSTEMS = True
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = True

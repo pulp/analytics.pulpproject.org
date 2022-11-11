@@ -41,4 +41,11 @@ message Summary {
   }
 
   repeated AgeCount age_count = 5;
+
+  message PostgresqlVersion {
+    required uint32 version = 1;
+    required uint32 count = 2;
+  }
+
+  repeated PostgresqlVersion postgresql_version = 6;
 }

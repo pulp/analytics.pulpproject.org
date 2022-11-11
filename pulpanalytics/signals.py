@@ -17,3 +17,6 @@ def _system_pre_save(sender, instance, raw, **kwargs):
             instance.first_seen = timezone.now()
         else:
             instance.first_seen = first_seen_system.first_seen
+
+        if instance.created and instance.first_seen > instance.created:
+            instance.first_seen = instance.created

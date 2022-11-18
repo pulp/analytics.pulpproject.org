@@ -27,4 +27,8 @@ message Analytics {
   }
 
   repeated Component components = 4;
+
+
+  optional uint32 postgresql_version = 5;
+
 }

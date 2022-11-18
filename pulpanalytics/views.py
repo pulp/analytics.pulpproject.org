@@ -183,6 +183,36 @@ def _add_content_apps_data(context, daily_summary):
     )
 
 
+def _get_postgresql_version_string_from_int(postgresql_version_int):
+    """See https://www.postgresql.org/docs/current/libpq-status.html#LIBPQ-PQSERVERVERSION"""
+    if postgresql_version_int == 0:
+        return "Unknown"
+    if postgresql_version_int >= 100000:  # It's 10.0+
+        major_version = postgresql_version_int // 10000
+        minor_version = postgresql_version_int % 10000
+        return f"{major_version}.{minor_version}"
+    else:  # It's < 10.0
+        version_str = str(postgresql_version_int)
+        major_version = int(version_str[:1])
+        minor_version = int(version_str[1:3])
+        bugfix_version = int(version_str[3:])
+        return f"{major_version}.{minor_version}.{bugfix_version}"
+
+
+def _add_postgresql_version(context, daily_summary):
+    if daily_summary is None:
+        return
+
+    for postgresql_version_proto_field in daily_summary.summary.postgresql_version:
+        # Raw data is kept as an int, and the graphs use human-readable postgresql version strings
+        version_string = _get_postgresql_version_string_from_int(
+            postgresql_version_proto_field.version
+        )
+
+        context["postgresql_versions_labels"].append(version_string)
+        context["postgresql_versions_count"].append(postgresql_version_proto_field.count)
+
+
 @method_decorator(csrf_exempt, name="dispatch")
 class RootView(View):
     def get(self, request):
@@ -194,9 +224,13 @@ class RootView(View):
             "online_content_apps_hosts_avg": [],
             "online_content_apps_processes_avg": [],
             "age_count": defaultdict(list),
+            "postgresql_versions_count": [],
+            "postgresql_versions_labels": [],
         }
         context.update({f"{plugin}_xy_versions": defaultdict(list) for plugin in PLUGINS})
         _add_demography(context, DailySummary.objects.order_by("date").last())
+
+        _add_postgresql_version(context, DailySummary.objects.order_by("date").last())
 
         for daily_summary in DailySummary.objects.order_by("date"):
             _add_age_data(context, daily_summary)
@@ -220,7 +254,9 @@ class RootView(View):
         analytics.ParseFromString(request.body)
 
         with suppress(IntegrityError), transaction.atomic():
-            system = System.objects.create(system_id=analytics.system_id)
+            system = System.objects.create(
+                system_id=analytics.system_id, postgresql_version=analytics.postgresql_version
+            )
             _save_components(system, analytics)
             _save_online_content_apps(system, analytics)
             _save_online_workers(system, analytics)

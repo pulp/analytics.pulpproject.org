@@ -4,11 +4,11 @@ This repo contains the backend code for:
 * https://dev.analytics.pulpproject.org/  - The dev site is the [dev branch](https://github.com/pulp/analytics.pulpproject.org/tree/dev)
 
 
-## Telemetry Data Flow
+## Analytics Data Flow
 
 At a high level, the metrics data flows like this:
 
-1. Pulpcore gathers and posts telemetry daily from each installation
+1. Pulpcore gathers and posts analytics daily data from each installation
 2. The analytics site receives and stores the data without summarization
 3. Once a day the data is summarized via a django command called on a cron job. This also cleans old
 raw data after some time.
@@ -20,26 +20,26 @@ raw data after some time.
 Pulpcore installations gather the metrics and submit them to either the dev or prod site
 depending on what the version strings of the pulp components are. If all version strings are
 GA releases its sent to the production sent, otherwise it's sent to the dev site. See the
-[get_telemetry_posting_url() code](https://github.com/pulp/pulpcore/blob/main/pulpcore/app/tasks/telemetry.py#L25).
+[get_analytics_posting_url() code](https://github.com/pulp/pulpcore/blob/main/pulpcore/app/tasks/analytics.py#L25).
 
-Telemetry payload is submitted to the server via a [Protocol Buffer](https://developers.google.com/protocol-buffers/)
-definition, which is defined [here](https://github.com/pulp/analytics.pulpproject.org/blob/main/telemetry.proto).
-The pulpcore code gathers the telemetry data and constructs the telemetry payload
-[in this module](https://github.com/pulp/pulpcore/blob/main/pulpcore/app/tasks/telemetry.py).
+Analytics payload is submitted to the server via a [Protocol Buffer](https://developers.google.com/protocol-buffers/)
+definition, which is defined [here](https://github.com/pulp/analytics.pulpproject.org/blob/main/analytics.proto).
+The pulpcore code gathers the analytics data and constructs the analytics payload
+[in this module](https://github.com/pulp/pulpcore/blob/main/pulpcore/app/tasks/analytics.py).
 
 The protocol buffer definition is compiled locally with the commands below and checked-in
-[here in this repo](https://github.com/pulp/analytics.pulpproject.org/blob/main/pulpanalytics/telemetry_pb2.py)
-and [here in pulpcore](https://github.com/pulp/pulpcore/blob/main/pulpcore/app/protobuf/telemetry_pb2.py).
+[here in this repo](https://github.com/pulp/analytics.pulpproject.org/blob/main/pulpanalytics/analytics_pb2.py)
+and [here in pulpcore](https://github.com/pulp/pulpcore/blob/main/pulpcore/app/protobuf/analytics_pb2.py).
 
 ```shell
 sudo dnf install protobuf  # Install it anyway you want
 cd analytics.pulpproject.org  # The command below assumes you are in the root dir
-protoc --python_out pulpanalytics/ ./telemetry.proto  # Copy this to pulpcore also
+protoc --python_out pulpanalytics/ ./analytics.proto  # Copy this to pulpcore also
 ```
 
-### Storing Telemetry
+### Storing Analytics
 
-The Telemetry data POST is [handled here](https://github.com/pulp/analytics.pulpproject.org/blob/main/pulpanalytics/views.py#L171-L184)
+The analytics data POST is [handled here](https://github.com/pulp/analytics.pulpproject.org/blob/main/pulpanalytics/views.py#L171-L184)
 using the protobuf object. The pieces are then saved as [model instances](https://github.com/pulp/analytics.pulpproject.org/blob/main/pulpanalytics/models.py)
 all of which foreign key to a single System object which stores the datetime of submission.
 
@@ -58,10 +58,10 @@ cd analytics.pulpproject.org  # The command below assumes you are in the root di
 protoc --python_out pulpanalytics/ ./summary.proto  # This only lives on the server side (this repo)
 ```
 
-A summary is produced for each 24 hour period and stores it as json data in a
+A summary is produced for each 24-hour period and stores it as json data in a
 [DailySummary instance](https://github.com/pulp/analytics.pulpproject.org/blob/main/pulpanalytics/models.py#L45).
-How each telemetry metric is summarized is beyond the scope of this document, look at the code and
-the proposals for each telemetry metric (which should outline summarization).
+How each analytics metric is summarized is beyond the scope of this document, look at the code and
+the proposals for each analytics metric (which should outline summarization).
 
 
 ### Visualizing Summarized Data

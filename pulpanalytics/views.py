@@ -13,8 +13,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from git import Repo
 
+from pulpanalytics.analytics_pb2 import Analytics
 from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
-from pulpanalytics.telemetry_pb2 import Telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -57,24 +57,24 @@ def _check_component_version(version):
             raise LogAndDropData(f"The version string {version} does not only contain numbers.")
 
 
-def _save_components(system, telemetry):
+def _save_components(system, analytics):
     components = []
-    for component in telemetry.components:
+    for component in analytics.components:
         if not settings.COLLECT_DEV_SYSTEMS:
             _check_component_version(component.version)
         components.append(Component(system=system, name=component.name, version=component.version))
     Component.objects.bulk_create(components)
 
 
-def _save_online_content_apps(system, telemetry):
-    hosts = telemetry.online_content_apps.hosts
-    processes = telemetry.online_content_apps.processes
+def _save_online_content_apps(system, analytics):
+    hosts = analytics.online_content_apps.hosts
+    processes = analytics.online_content_apps.processes
     OnlineContentApps.objects.create(system=system, hosts=hosts, processes=processes)
 
 
-def _save_online_workers(system, telemetry):
-    hosts = telemetry.online_workers.hosts
-    processes = telemetry.online_workers.processes
+def _save_online_workers(system, analytics):
+    hosts = analytics.online_workers.hosts
+    processes = analytics.online_workers.processes
     OnlineWorkers.objects.create(system=system, hosts=hosts, processes=processes)
 
 
@@ -216,13 +216,13 @@ class RootView(View):
         return HttpResponse(template.render(context, request))
 
     def post(self, request):
-        telemetry = Telemetry()
-        telemetry.ParseFromString(request.body)
+        analytics = Analytics()
+        analytics.ParseFromString(request.body)
 
         with suppress(IntegrityError), transaction.atomic():
-            system = System.objects.create(system_id=telemetry.system_id)
-            _save_components(system, telemetry)
-            _save_online_content_apps(system, telemetry)
-            _save_online_workers(system, telemetry)
+            system = System.objects.create(system_id=analytics.system_id)
+            _save_components(system, analytics)
+            _save_online_content_apps(system, analytics)
+            _save_online_workers(system, analytics)
 
         return HttpResponse()

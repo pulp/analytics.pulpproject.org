@@ -151,18 +151,22 @@ def _add_demography(context, daily_summary):
 
 
 def _add_age_data(context, daily_summary):
-    timestamp = daily_summary.epoch_ms_timestamp()
-    bucket = [0, 0, 0]
-    for item in daily_summary.summary.age_count:
-        if item.age <= 1:
-            bucket[0] += item.count
-        elif item.age <= 7:
-            bucket[1] += item.count
-        else:
-            bucket[2] += item.count
-    context["age_count"][">=8"].append({"x": timestamp, "y": bucket[2]})
-    context["age_count"]["2-7"].append({"x": timestamp, "y": bucket[1]})
-    context["age_count"]["0-1"].append({"x": timestamp, "y": bucket[0]})
+    if daily_summary.summary.age_count:
+        timestamp = daily_summary.epoch_ms_timestamp()
+        bucket = [0, 0, 0, 0]
+        for item in daily_summary.summary.age_count:
+            if item.age <= 0:
+                bucket[0] += item.count
+            elif item.age <= 2:
+                bucket[1] += item.count
+            elif item.age <= 7:
+                bucket[2] += item.count
+            else:
+                bucket[3] += item.count
+        context["age_count"][">=8"].append({"x": timestamp, "y": bucket[3]})
+        context["age_count"]["3-7"].append({"x": timestamp, "y": bucket[2]})
+        context["age_count"]["1-2"].append({"x": timestamp, "y": bucket[1]})
+        context["age_count"]["0"].append({"x": timestamp, "y": bucket[0]})
 
 
 def _add_workers_data(context, daily_summary):

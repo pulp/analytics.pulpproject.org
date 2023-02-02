@@ -23,7 +23,6 @@ def remove_duplicates(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("pulpanalytics", "0002_system_first_seen"),
     ]

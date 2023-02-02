@@ -64,7 +64,6 @@ _sym_db.RegisterMessage(Analytics.OnlineWorkers)
 _sym_db.RegisterMessage(Analytics.Component)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
-
     DESCRIPTOR._options = None
     _ANALYTICS._serialized_start = 20
     _ANALYTICS._serialized_end = 379

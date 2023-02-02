@@ -5,7 +5,6 @@ from google.protobuf.json_format import ParseDict
 
 
 class ProtoBufField(models.JSONField):
-
     description = "A protobuf object backed by a JSON Field"
 
     def __init__(self, *args, **kwargs):

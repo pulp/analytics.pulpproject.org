@@ -63,7 +63,6 @@ class Command(BaseCommand):
     def _handle_components(systems, summary):
         components_qs = Component.objects.filter(system__in=systems)
         for name in components_qs.values_list("name", flat=True).distinct():
-
             xy_dict = defaultdict(int)
             xyz_dict = defaultdict(int)
 

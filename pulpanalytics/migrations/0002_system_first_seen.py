@@ -16,7 +16,6 @@ def adjust_first_seen(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("pulpanalytics", "0001_initial"),
     ]

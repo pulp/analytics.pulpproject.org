@@ -97,7 +97,6 @@ _sym_db.RegisterMessage(Summary.AgeCount)
 _sym_db.RegisterMessage(Summary.PostgresqlVersion)
 
 if _descriptor._USE_C_DESCRIPTORS == False:
-
     DESCRIPTOR._options = None
     _SUMMARY._serialized_start = 18
     _SUMMARY._serialized_end = 658

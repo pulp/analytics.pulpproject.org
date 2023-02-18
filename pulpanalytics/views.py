@@ -207,14 +207,13 @@ def _add_postgresql_version(context, daily_summary):
     if daily_summary is None:
         return
 
-    for postgresql_version_proto_field in daily_summary.summary.postgresql_version:
+    data = sorted([(item.version, item.count) for item in daily_summary.summary.postgresql_version])
+    for item in data:
         # Raw data is kept as an int, and the graphs use human-readable postgresql version strings
-        version_string = _get_postgresql_version_string_from_int(
-            postgresql_version_proto_field.version
-        )
+        version_string = _get_postgresql_version_string_from_int(item[0])
 
         context["postgresql_versions_labels"].append(version_string)
-        context["postgresql_versions_count"].append(postgresql_version_proto_field.count)
+        context["postgresql_versions_count"].append(item[1])
 
 
 @method_decorator(csrf_exempt, name="dispatch")

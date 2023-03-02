@@ -2,7 +2,7 @@
 name: Metric Proposal
 about: Use this template to propose collecting a new metric from Pulp systems.
 title: 'Proposal: Short Description Here'
-labels: ''
+labels: Proposed
 assignees: ''
 
 ---

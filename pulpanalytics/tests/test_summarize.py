@@ -92,3 +92,92 @@ def test_summary_postgresql_version(monkeypatch, db):
     ]
 
     assert daily_summary.summary.postgresql_version == expected_postgresql_version
+
+
+def test_summary_rbac(monkeypatch, db):
+    assert not DailySummary.objects.exists()
+    yesterday = timezone.now() - timezone.timedelta(days=1)
+    with monkeypatch.context() as mp:
+        mp.setattr(timezone, "now", lambda: yesterday)
+        System.objects.create(
+            system_id=uuid.uuid4(),
+            users=None,
+            groups=None,
+            domains=None,
+            custom_access_policies=None,
+            custom_roles=None,
+        )
+        System.objects.create(
+            system_id=uuid.uuid4(),
+            users=1,
+            groups=1,
+            domains=1,
+            custom_access_policies=1,
+            custom_roles=1,
+        )
+        System.objects.create(
+            system_id=uuid.uuid4(),
+            users=1,
+            groups=2,
+            domains=2,
+            custom_access_policies=2,
+            custom_roles=2,
+        )
+        System.objects.create(
+            system_id=uuid.uuid4(),
+            users=1,
+            groups=2,
+            domains=3,
+            custom_access_policies=3,
+            custom_roles=3,
+        )
+        System.objects.create(
+            system_id=uuid.uuid4(),
+            users=1,
+            groups=2,
+            domains=3,
+            custom_access_policies=4,
+            custom_roles=4,
+        )
+        System.objects.create(
+            system_id=uuid.uuid4(),
+            users=1,
+            groups=2,
+            domains=3,
+            custom_access_policies=4,
+            custom_roles=5,
+        )
+
+    call_command("summarize")
+    daily_summary = DailySummary.objects.order_by("date").last()
+    assert daily_summary
+
+    expected_rbac_stats = Summary.RbacStats(
+        users=[
+            Summary.NumberCount(number=1, count=5),
+        ],
+        groups=[
+            Summary.NumberCount(number=1, count=1),
+            Summary.NumberCount(number=2, count=4),
+        ],
+        domains=[
+            Summary.NumberCount(number=1, count=1),
+            Summary.NumberCount(number=2, count=1),
+            Summary.NumberCount(number=3, count=3),
+        ],
+        custom_access_policies=[
+            Summary.NumberCount(number=1, count=1),
+            Summary.NumberCount(number=2, count=1),
+            Summary.NumberCount(number=3, count=1),
+            Summary.NumberCount(number=4, count=2),
+        ],
+        custom_roles=[
+            Summary.NumberCount(number=1, count=1),
+            Summary.NumberCount(number=2, count=1),
+            Summary.NumberCount(number=3, count=1),
+            Summary.NumberCount(number=4, count=1),
+            Summary.NumberCount(number=5, count=1),
+        ],
+    )
+
+    assert daily_summary.summary.rbac_stats == expected_rbac_stats

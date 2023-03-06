@@ -4,9 +4,8 @@
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
-from google.protobuf import message as _message
-from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf.internal import builder as _builder
 
 # @@protoc_insertion_point(imports)
 
@@ -14,102 +13,29 @@ _sym_db = _symbol_database.Default()
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\rsummary.proto"\x80\x05\n\x07Summary\x12\x37\n\x13online_content_apps\x18\x01 \x01(\x0b\x32\x1a.Summary.OnlineContentApps\x12.\n\x0eonline_workers\x18\x02 \x01(\x0b\x32\x16.Summary.OnlineWorkers\x12*\n\x0cxy_component\x18\x03 \x03(\x0b\x32\x14.Summary.XYComponent\x12,\n\rxyz_component\x18\x04 \x03(\x0b\x32\x15.Summary.XYZComponent\x12$\n\tage_count\x18\x05 \x03(\x0b\x32\x11.Summary.AgeCount\x12\x36\n\x12postgresql_version\x18\x06 \x03(\x0b\x32\x1a.Summary.PostgresqlVersion\x1a?\n\x11OnlineContentApps\x12\x16\n\x0eprocesses__avg\x18\x01 \x01(\x02\x12\x12\n\nhosts__avg\x18\x02 \x01(\x02\x1a;\n\rOnlineWorkers\x12\x16\n\x0eprocesses__avg\x18\x01 \x01(\x02\x12\x12\n\nhosts__avg\x18\x02 \x01(\x02\x1a;\n\x0bXYComponent\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x0f\n\x07version\x18\x02 \x02(\t\x12\r\n\x05\x63ount\x18\x03 \x02(\r\x1a<\n\x0cXYZComponent\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x0f\n\x07version\x18\x02 \x02(\t\x12\r\n\x05\x63ount\x18\x03 \x02(\r\x1a&\n\x08\x41geCount\x12\x0b\n\x03\x61ge\x18\x01 \x02(\r\x12\r\n\x05\x63ount\x18\x02 \x02(\r\x1a\x33\n\x11PostgresqlVersion\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\r\n\x05\x63ount\x18\x02 \x02(\r'
+    b'\n\rsummary.proto"\xb8\x07\n\x07Summary\x12\x37\n\x13online_content_apps\x18\x01 \x01(\x0b\x32\x1a.Summary.OnlineContentApps\x12.\n\x0eonline_workers\x18\x02 \x01(\x0b\x32\x16.Summary.OnlineWorkers\x12*\n\x0cxy_component\x18\x03 \x03(\x0b\x32\x14.Summary.XYComponent\x12,\n\rxyz_component\x18\x04 \x03(\x0b\x32\x15.Summary.XYZComponent\x12$\n\tage_count\x18\x05 \x03(\x0b\x32\x11.Summary.AgeCount\x12\x36\n\x12postgresql_version\x18\x06 \x03(\x0b\x32\x1a.Summary.PostgresqlVersion\x12&\n\nrbac_stats\x18\x07 \x01(\x0b\x32\x12.Summary.RbacStats\x1a?\n\x11OnlineContentApps\x12\x16\n\x0eprocesses__avg\x18\x01 \x01(\x02\x12\x12\n\nhosts__avg\x18\x02 \x01(\x02\x1a;\n\rOnlineWorkers\x12\x16\n\x0eprocesses__avg\x18\x01 \x01(\x02\x12\x12\n\nhosts__avg\x18\x02 \x01(\x02\x1a;\n\x0bXYComponent\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x0f\n\x07version\x18\x02 \x02(\t\x12\r\n\x05\x63ount\x18\x03 \x02(\r\x1a<\n\x0cXYZComponent\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x0f\n\x07version\x18\x02 \x02(\t\x12\r\n\x05\x63ount\x18\x03 \x02(\r\x1a,\n\x0bNumberCount\x12\x0e\n\x06number\x18\x01 \x02(\r\x12\r\n\x05\x63ount\x18\x02 \x02(\r\x1a&\n\x08\x41geCount\x12\x0b\n\x03\x61ge\x18\x01 \x02(\r\x12\r\n\x05\x63ount\x18\x02 \x02(\r\x1a\x33\n\x11PostgresqlVersion\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\r\n\x05\x63ount\x18\x02 \x02(\r\x1a\xdf\x01\n\tRbacStats\x12#\n\x05users\x18\x01 \x03(\x0b\x32\x14.Summary.NumberCount\x12$\n\x06groups\x18\x02 \x03(\x0b\x32\x14.Summary.NumberCount\x12%\n\x07\x64omains\x18\x03 \x03(\x0b\x32\x14.Summary.NumberCount\x12\x34\n\x16\x63ustom_access_policies\x18\x04 \x03(\x0b\x32\x14.Summary.NumberCount\x12*\n\x0c\x63ustom_roles\x18\x05 \x03(\x0b\x32\x14.Summary.NumberCount'
 )
 
-
-_SUMMARY = DESCRIPTOR.message_types_by_name["Summary"]
-_SUMMARY_ONLINECONTENTAPPS = _SUMMARY.nested_types_by_name["OnlineContentApps"]
-_SUMMARY_ONLINEWORKERS = _SUMMARY.nested_types_by_name["OnlineWorkers"]
-_SUMMARY_XYCOMPONENT = _SUMMARY.nested_types_by_name["XYComponent"]
-_SUMMARY_XYZCOMPONENT = _SUMMARY.nested_types_by_name["XYZComponent"]
-_SUMMARY_AGECOUNT = _SUMMARY.nested_types_by_name["AgeCount"]
-_SUMMARY_POSTGRESQLVERSION = _SUMMARY.nested_types_by_name["PostgresqlVersion"]
-Summary = _reflection.GeneratedProtocolMessageType(
-    "Summary",
-    (_message.Message,),
-    {
-        "OnlineContentApps": _reflection.GeneratedProtocolMessageType(
-            "OnlineContentApps",
-            (_message.Message,),
-            {
-                "DESCRIPTOR": _SUMMARY_ONLINECONTENTAPPS,
-                "__module__": "summary_pb2"
-                # @@protoc_insertion_point(class_scope:Summary.OnlineContentApps)
-            },
-        ),
-        "OnlineWorkers": _reflection.GeneratedProtocolMessageType(
-            "OnlineWorkers",
-            (_message.Message,),
-            {
-                "DESCRIPTOR": _SUMMARY_ONLINEWORKERS,
-                "__module__": "summary_pb2"
-                # @@protoc_insertion_point(class_scope:Summary.OnlineWorkers)
-            },
-        ),
-        "XYComponent": _reflection.GeneratedProtocolMessageType(
-            "XYComponent",
-            (_message.Message,),
-            {
-                "DESCRIPTOR": _SUMMARY_XYCOMPONENT,
-                "__module__": "summary_pb2"
-                # @@protoc_insertion_point(class_scope:Summary.XYComponent)
-            },
-        ),
-        "XYZComponent": _reflection.GeneratedProtocolMessageType(
-            "XYZComponent",
-            (_message.Message,),
-            {
-                "DESCRIPTOR": _SUMMARY_XYZCOMPONENT,
-                "__module__": "summary_pb2"
-                # @@protoc_insertion_point(class_scope:Summary.XYZComponent)
-            },
-        ),
-        "AgeCount": _reflection.GeneratedProtocolMessageType(
-            "AgeCount",
-            (_message.Message,),
-            {
-                "DESCRIPTOR": _SUMMARY_AGECOUNT,
-                "__module__": "summary_pb2"
-                # @@protoc_insertion_point(class_scope:Summary.AgeCount)
-            },
-        ),
-        "PostgresqlVersion": _reflection.GeneratedProtocolMessageType(
-            "PostgresqlVersion",
-            (_message.Message,),
-            {
-                "DESCRIPTOR": _SUMMARY_POSTGRESQLVERSION,
-                "__module__": "summary_pb2"
-                # @@protoc_insertion_point(class_scope:Summary.PostgresqlVersion)
-            },
-        ),
-        "DESCRIPTOR": _SUMMARY,
-        "__module__": "summary_pb2"
-        # @@protoc_insertion_point(class_scope:Summary)
-    },
-)
-_sym_db.RegisterMessage(Summary)
-_sym_db.RegisterMessage(Summary.OnlineContentApps)
-_sym_db.RegisterMessage(Summary.OnlineWorkers)
-_sym_db.RegisterMessage(Summary.XYComponent)
-_sym_db.RegisterMessage(Summary.XYZComponent)
-_sym_db.RegisterMessage(Summary.AgeCount)
-_sym_db.RegisterMessage(Summary.PostgresqlVersion)
-
+_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "summary_pb2", globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
     _SUMMARY._serialized_start = 18
-    _SUMMARY._serialized_end = 658
-    _SUMMARY_ONLINECONTENTAPPS._serialized_start = 318
-    _SUMMARY_ONLINECONTENTAPPS._serialized_end = 381
-    _SUMMARY_ONLINEWORKERS._serialized_start = 383
-    _SUMMARY_ONLINEWORKERS._serialized_end = 442
-    _SUMMARY_XYCOMPONENT._serialized_start = 444
-    _SUMMARY_XYCOMPONENT._serialized_end = 503
-    _SUMMARY_XYZCOMPONENT._serialized_start = 505
-    _SUMMARY_XYZCOMPONENT._serialized_end = 565
-    _SUMMARY_AGECOUNT._serialized_start = 567
-    _SUMMARY_AGECOUNT._serialized_end = 605
-    _SUMMARY_POSTGRESQLVERSION._serialized_start = 607
-    _SUMMARY_POSTGRESQLVERSION._serialized_end = 658
+    _SUMMARY._serialized_end = 970
+    _SUMMARY_ONLINECONTENTAPPS._serialized_start = 358
+    _SUMMARY_ONLINECONTENTAPPS._serialized_end = 421
+    _SUMMARY_ONLINEWORKERS._serialized_start = 423
+    _SUMMARY_ONLINEWORKERS._serialized_end = 482
+    _SUMMARY_XYCOMPONENT._serialized_start = 484
+    _SUMMARY_XYCOMPONENT._serialized_end = 543
+    _SUMMARY_XYZCOMPONENT._serialized_start = 545
+    _SUMMARY_XYZCOMPONENT._serialized_end = 605
+    _SUMMARY_NUMBERCOUNT._serialized_start = 607
+    _SUMMARY_NUMBERCOUNT._serialized_end = 651
+    _SUMMARY_AGECOUNT._serialized_start = 653
+    _SUMMARY_AGECOUNT._serialized_end = 691
+    _SUMMARY_POSTGRESQLVERSION._serialized_start = 693
+    _SUMMARY_POSTGRESQLVERSION._serialized_end = 744
+    _SUMMARY_RBACSTATS._serialized_start = 747
+    _SUMMARY_RBACSTATS._serialized_end = 970
 # @@protoc_insertion_point(module_scope)

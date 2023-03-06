@@ -31,4 +31,14 @@ message Analytics {
 
   optional uint32 postgresql_version = 5;
 
+  message RBACStats {
+    optional uint32 users = 1;
+    optional uint32 groups = 2;
+    optional uint32 domains = 3;
+    optional uint32 custom_access_policies = 4;
+    optional uint32 custom_roles = 5;
+  }
+
+  optional RBACStats rbac_stats = 6;
+
 }

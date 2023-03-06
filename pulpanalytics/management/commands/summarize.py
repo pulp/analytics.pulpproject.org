@@ -104,6 +104,37 @@ class Command(BaseCommand):
             new_postgresql_version_entry.version = version
             new_postgresql_version_entry.count = count
 
+    @staticmethod
+    def _handle_rbac_stats(systems, summary):
+        users_dict = defaultdict(int)
+        groups_dict = defaultdict(int)
+        domains_dict = defaultdict(int)
+        custom_access_policies_dict = defaultdict(int)
+        custom_roles_dict = defaultdict(int)
+        for system in systems:
+            if system.users is not None:
+                users_dict[system.users] += 1
+            if system.groups is not None:
+                groups_dict[system.groups] += 1
+            if system.domains is not None:
+                domains_dict[system.domains] += 1
+            if system.custom_access_policies is not None:
+                custom_access_policies_dict[system.custom_access_policies] += 1
+            if system.custom_roles is not None:
+                custom_roles_dict[system.custom_roles] += 1
+        for number in sorted(users_dict.keys()):
+            summary.rbac_stats.users.add(number=number, count=users_dict[number])
+        for number in sorted(groups_dict.keys()):
+            summary.rbac_stats.groups.add(number=number, count=groups_dict[number])
+        for number in sorted(domains_dict.keys()):
+            summary.rbac_stats.domains.add(number=number, count=domains_dict[number])
+        for number in sorted(custom_access_policies_dict.keys()):
+            summary.rbac_stats.custom_access_policies.add(
+                number=number, count=custom_access_policies_dict[number]
+            )
+        for number in sorted(custom_roles_dict.keys()):
+            summary.rbac_stats.custom_roles.add(number=number, count=custom_roles_dict[number])
+
     def handle(self, *args, **options):
         while True:
             next_summary_date = self._get_next_date_to_summarize()
@@ -135,6 +166,7 @@ class Command(BaseCommand):
                 self._handle_components(persistent_systems, summary)
                 self._handle_age(systems, summary)
                 self._handle_postgresql_version(persistent_systems, summary)
+                self._handle_rbac_stats(persistent_systems, summary)
 
             DailySummary.objects.create(date=next_summary_date, summary=summary)
             print(f"Wrote summary for {next_summary_date}")

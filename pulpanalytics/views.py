@@ -6,11 +6,12 @@ from itertools import accumulate
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 from git import Repo
 
 from pulpanalytics.analytics_pb2 import Analytics
@@ -214,6 +215,35 @@ def _add_postgresql_version(context, daily_summary):
 
         context["postgresql_versions_labels"].append(version_string)
         context["postgresql_versions_count"].append(item[1])
+
+
+@require_GET
+def rbac_stats_view(request, measure):
+    if measure in ["users", "groups", "domains", "custom_access_policies", "custom_roles"]:
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        labels = []
+        counts = defaultdict(list)
+        qs = DailySummary.objects.order_by("date")
+        if start_date is not None:
+            qs = qs.filter(date__gte=start_date)
+        if end_date is not None:
+            qs = qs.filter(date__lte=end_date)
+        for index, daily_summary in enumerate(qs):
+            rbac_stats = daily_summary.summary.rbac_stats
+            labels.append(daily_summary.date)
+            for item in getattr(rbac_stats, measure):
+                dataset = counts[item.number]
+                while len(dataset) < index:
+                    dataset.append(0)
+                dataset.append(item.count)
+        datasets = [
+            {"label": f"<= {key}", "data": counts[key], "fill": "-1"}
+            for key in sorted(counts.keys(), reverse=True)
+        ]
+        datasets[0]["fill"] = "origin"
+        return JsonResponse({"labels": labels, "datasets": datasets})
+    raise Http404("Not found")
 
 
 @method_decorator(csrf_exempt, name="dispatch")

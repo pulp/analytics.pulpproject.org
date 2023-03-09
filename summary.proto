@@ -35,6 +35,11 @@ message Summary {
 
   repeated XYZComponent xyz_component = 4;
 
+  message NumberCount {
+    required uint32 number = 1;
+    required uint32 count = 2;
+  }
+
   message AgeCount {
     required uint32 age = 1;
     required uint32 count = 2;
@@ -48,4 +53,15 @@ message Summary {
   }
 
   repeated PostgresqlVersion postgresql_version = 6;
+
+  message RbacStats {
+    repeated NumberCount users = 1;
+    repeated NumberCount groups = 2;
+    repeated NumberCount domains = 3;
+    repeated NumberCount custom_access_policies = 4;
+    repeated NumberCount custom_roles = 5;
+  }
+
+  optional RbacStats rbac_stats = 7;
+
 }

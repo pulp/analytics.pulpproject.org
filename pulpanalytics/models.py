@@ -8,7 +8,12 @@ class System(models.Model):
     system_id = models.UUIDField()
     created = models.DateTimeField(auto_now_add=True)
     first_seen = models.DateTimeField()
-    postgresql_version = models.PositiveIntegerField()
+    postgresql_version = models.PositiveIntegerField(default=0)
+    users = models.PositiveIntegerField(null=True)
+    groups = models.PositiveIntegerField(null=True)
+    domains = models.PositiveIntegerField(null=True)
+    custom_access_policies = models.PositiveIntegerField(null=True)
+    custom_roles = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return f"SystemID={self.system_id}, Created={self.created}"

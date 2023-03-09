@@ -70,3 +70,25 @@ def test_collect_dev_systems(db, client, collect_dev_systems):
         assert Component.objects.count() == 2
     else:
         assert System.objects.filter(system_id=SYSTEM_ID).count() == 0
+
+
+def test_collect_system_with_rbac(db, client):
+    analytics = Analytics()
+    analytics.system_id = SYSTEM_ID
+    analytics.rbac_stats.users = 1
+    analytics.rbac_stats.groups = 2
+    analytics.rbac_stats.domains = 3
+    analytics.rbac_stats.custom_access_policies = 4
+    analytics.rbac_stats.custom_roles = 5
+
+    response = client.post(
+        reverse("pulpanalytics:index"), analytics.SerializeToString(), "application/octets"
+    )
+    assert response.status_code == 200, response.status_code
+
+    system = System.objects.filter(system_id=SYSTEM_ID).get()
+    assert system.users == 1
+    assert system.groups == 2
+    assert system.domains == 3
+    assert system.custom_access_policies == 4
+    assert system.custom_roles == 5

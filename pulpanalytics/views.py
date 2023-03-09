@@ -258,7 +258,13 @@ class RootView(View):
 
         with suppress(IntegrityError), transaction.atomic():
             system = System.objects.create(
-                system_id=analytics.system_id, postgresql_version=analytics.postgresql_version
+                system_id=analytics.system_id,
+                postgresql_version=analytics.postgresql_version,
+                users=analytics.rbac_stats.users,
+                groups=analytics.rbac_stats.groups,
+                domains=analytics.rbac_stats.domains,
+                custom_access_policies=analytics.rbac_stats.custom_access_policies,
+                custom_roles=analytics.rbac_stats.custom_roles,
             )
             _save_components(system, analytics)
             _save_online_content_apps(system, analytics)

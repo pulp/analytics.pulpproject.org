@@ -237,9 +237,12 @@ def rbac_stats_view(request, measure):
                 while len(dataset) < index:
                     dataset.append(0)
                 dataset.append(item.count)
+        for dataset in counts.values():
+            while len(dataset) <= index:
+                dataset.append(0)
         datasets = [
             {"label": f"<= {key}", "data": counts[key], "fill": "-1"}
-            for key in sorted(counts.keys(), reverse=True)
+            for key in sorted(counts.keys())
         ]
         datasets[0]["fill"] = "origin"
         return JsonResponse({"labels": labels, "datasets": datasets})

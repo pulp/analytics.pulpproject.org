@@ -24,6 +24,11 @@
   <canvas id="demography"></canvas>
   <canvas id="age-count"></canvas>
   <canvas id="postgresql-version"></canvas>
+  <canvas id="users-graph"></canvas>
+  <canvas id="groups-graph"></canvas>
+  <canvas id="domains-graph"></canvas>
+  <canvas id="custom-access-policies-graph"></canvas>
+  <canvas id="custom-roles-graph"></canvas>
 </div>
 
 {{ demography|json_script:"demography-data" }}
@@ -41,6 +46,37 @@
 // Add autocolor support
 const autocolors = window['chartjs-plugin-autocolors'];
 Chart.register(autocolors);
+
+// rbac_stats
+[
+    {title: 'Users', canvas_id: 'users-graph', url: '/rbac_stats/users/?start_date=2023-03-10'},
+    {title: 'Groups', canvas_id: 'groups-graph', url: '/rbac_stats/groups/?start_date=2023-03-10'},
+    {title: 'Domains', canvas_id: 'domains-graph', url: '/rbac_stats/domains/?start_date=2023-03-10'},
+    {title: 'Custom Access Policies', canvas_id: 'custom-access-policies-graph', url: '/rbac_stats/custom_access_policies/?start_date=2023-03-10'},
+    {title: 'Custom Roles', canvas_id: 'custom-roles-graph', url: '/rbac_stats/custom_roles/?start_date=2023-03-10'},
+].forEach((item) => {
+    const element = document.getElementById(item.canvas_id);
+    const chart = new Chart(element, {
+        type: 'line',
+        data: {},
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: item.title
+                }
+            },
+            scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: { beginAtZero: true, stacked: true }
+            }
+        }
+    });
+    fetch(item.url).then(res => res.json()).then(data => {
+        chart.data = data;
+        chart.update();
+    });
+});
 
 // Demography
 const demography_element = document.getElementById("demography");

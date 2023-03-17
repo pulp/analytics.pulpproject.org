@@ -52,6 +52,12 @@ def test_collect_prod_systems(db, client):
 
     assert System.objects.filter(system_id=SYSTEM_ID).count() == 1
     assert Component.objects.count() == 2
+    system = System.objects.get(system_id=SYSTEM_ID)
+    assert system.users is None
+    assert system.groups is None
+    assert system.domains is None
+    assert system.custom_access_policies is None
+    assert system.custom_roles is None
 
 
 def test_collect_dev_systems(db, client, collect_dev_systems):

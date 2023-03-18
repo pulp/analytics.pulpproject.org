@@ -244,7 +244,8 @@ def rbac_stats_view(request, measure):
             {"label": f"<= {key}", "data": counts[key], "fill": "-1"}
             for key in sorted(counts.keys())
         ]
-        datasets[0]["fill"] = "origin"
+        if datasets:
+            datasets[0]["fill"] = "origin"
         return JsonResponse({"labels": labels, "datasets": datasets})
     raise Http404("Not found")
 

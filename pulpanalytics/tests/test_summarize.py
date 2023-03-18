@@ -39,11 +39,9 @@ def test_summary_empty(db):
     assert daily_summary.summary == Summary()
 
 
-def test_summary_age(monkeypatch, db, persistent_min_age_days):
+def test_summary_age(yesterday, db, persistent_min_age_days):
     assert not DailySummary.objects.exists()
-    yesterday = timezone.now() - timezone.timedelta(days=1)
-    with monkeypatch.context() as mp:
-        mp.setattr(timezone, "now", lambda: yesterday)
+    with yesterday():
         System.objects.create(system_id=SYSTEM_ID, postgresql_version=0)
 
     call_command("summarize")
@@ -52,11 +50,9 @@ def test_summary_age(monkeypatch, db, persistent_min_age_days):
     assert daily_summary.summary.age_count == [Summary.AgeCount(age=0, count=1)]
 
 
-def test_summary_worker_count(monkeypatch, db, persistent_min_age_days):
+def test_summary_worker_count(yesterday, db, persistent_min_age_days):
     assert not DailySummary.objects.exists()
-    yesterday = timezone.now() - timezone.timedelta(days=1)
-    with monkeypatch.context() as mp:
-        mp.setattr(timezone, "now", lambda: yesterday)
+    with yesterday():
         system = System.objects.create(system_id=SYSTEM_ID, postgresql_version=0)
         OnlineWorkers.objects.create(system=system, hosts=1, processes=2)
 
@@ -71,11 +67,9 @@ def test_summary_worker_count(monkeypatch, db, persistent_min_age_days):
         )
 
 
-def test_summary_postgresql_version(monkeypatch, db):
+def test_summary_postgresql_version(yesterday, db):
     assert not DailySummary.objects.exists()
-    yesterday = timezone.now() - timezone.timedelta(days=1)
-    with monkeypatch.context() as mp:
-        mp.setattr(timezone, "now", lambda: yesterday)
+    with yesterday():
         System.objects.create(system_id=uuid.uuid4(), postgresql_version=0)
         System.objects.create(system_id=uuid.uuid4(), postgresql_version=90200)
         System.objects.create(system_id=uuid.uuid4(), postgresql_version=90200)
@@ -94,11 +88,9 @@ def test_summary_postgresql_version(monkeypatch, db):
     assert daily_summary.summary.postgresql_version == expected_postgresql_version
 
 
-def test_summary_rbac(monkeypatch, db):
+def test_summary_rbac(yesterday, db):
     assert not DailySummary.objects.exists()
-    yesterday = timezone.now() - timezone.timedelta(days=1)
-    with monkeypatch.context() as mp:
-        mp.setattr(timezone, "now", lambda: yesterday)
+    with yesterday():
         System.objects.create(
             system_id=uuid.uuid4(),
             users=None,

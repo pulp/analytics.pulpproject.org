@@ -49,11 +49,11 @@ Chart.register(autocolors);
 
 // rbac_stats
 [
-    {title: 'Users', canvas_id: 'users-graph', url: '/rbac_stats/users/?start_date=2023-03-10'},
-    {title: 'Groups', canvas_id: 'groups-graph', url: '/rbac_stats/groups/?start_date=2023-03-10'},
-    {title: 'Domains', canvas_id: 'domains-graph', url: '/rbac_stats/domains/?start_date=2023-03-10'},
-    {title: 'Custom Access Policies', canvas_id: 'custom-access-policies-graph', url: '/rbac_stats/custom_access_policies/?start_date=2023-03-10'},
-    {title: 'Custom Roles', canvas_id: 'custom-roles-graph', url: '/rbac_stats/custom_roles/?start_date=2023-03-10'},
+    {title: 'Users', canvas_id: 'users-graph', url: '/rbac_stats/users/?start_date=2023-03-10&bucket=1'},
+    {title: 'Groups', canvas_id: 'groups-graph', url: '/rbac_stats/groups/?start_date=2023-03-10&bucket=1'},
+    {title: 'Domains', canvas_id: 'domains-graph', url: '/rbac_stats/domains/?start_date=2023-03-10&bucket=1'},
+    {title: 'Custom Access Policies', canvas_id: 'custom-access-policies-graph', url: '/rbac_stats/custom_access_policies/?start_date=2023-03-10&bucket=1'},
+    {title: 'Custom Roles', canvas_id: 'custom-roles-graph', url: '/rbac_stats/custom_roles/?start_date=2023-03-10&bucket=1'},
 ].forEach((item) => {
     const element = document.getElementById(item.canvas_id);
     const chart = new Chart(element, {

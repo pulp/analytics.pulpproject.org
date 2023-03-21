@@ -222,6 +222,7 @@ def rbac_stats_view(request, measure):
     if measure in ["users", "groups", "domains", "custom_access_policies", "custom_roles"]:
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
+        bucket = request.GET.get("bucket")
         labels = []
         counts = defaultdict(list)
         qs = DailySummary.objects.order_by("date")
@@ -233,10 +234,14 @@ def rbac_stats_view(request, measure):
             rbac_stats = daily_summary.summary.rbac_stats
             labels.append(daily_summary.date)
             for item in getattr(rbac_stats, measure):
-                dataset = counts[item.number]
-                while len(dataset) < index:
+                if bucket and item.number:
+                    number = 1 << (item.number - 1).bit_length()
+                else:
+                    number = item.number
+                dataset = counts[number]
+                while len(dataset) <= index:
                     dataset.append(0)
-                dataset.append(item.count)
+                dataset[index] += item.count
         for dataset in counts.values():
             while len(dataset) <= index:
                 dataset.append(0)
@@ -244,7 +249,8 @@ def rbac_stats_view(request, measure):
             {"label": f"<= {key}", "data": counts[key], "fill": "-1"}
             for key in sorted(counts.keys())
         ]
-        datasets[0]["fill"] = "origin"
+        if datasets:
+            datasets[0]["fill"] = "origin"
         return JsonResponse({"labels": labels, "datasets": datasets})
     raise Http404("Not found")
 

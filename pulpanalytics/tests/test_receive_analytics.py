@@ -1,6 +1,5 @@
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from pulpanalytics.analytics_pb2 import Analytics
 from pulpanalytics.models import Component, System
@@ -14,13 +13,11 @@ def collect_dev_systems(request, settings):
     return request.param
 
 
-def test_system_reports_twice(monkeypatch, db, client):
+def test_system_reports_twice(yesterday, db, client):
     analytics = Analytics()
     analytics.system_id = SYSTEM_ID
 
-    yesterday = timezone.now() - timezone.timedelta(days=1)
-    with monkeypatch.context() as mp:
-        mp.setattr(timezone, "now", lambda: yesterday)
+    with yesterday():
         response = client.post(
             reverse("pulpanalytics:index"), analytics.SerializeToString(), "application/octets"
         )

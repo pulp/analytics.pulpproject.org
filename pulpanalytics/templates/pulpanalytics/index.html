@@ -54,6 +54,9 @@ Chart.register(autocolors);
     {title: 'Domains', canvas_id: 'domains-graph', url: '/rbac_stats/domains/?start_date=2023-03-10&bucket=1'},
     {title: 'Custom Access Policies', canvas_id: 'custom-access-policies-graph', url: '/rbac_stats/custom_access_policies/?start_date=2023-03-10&bucket=1'},
     {title: 'Custom Roles', canvas_id: 'custom-roles-graph', url: '/rbac_stats/custom_roles/?start_date=2023-03-10&bucket=1'},
+{% for plugin in PLUGINS %}
+  {title: '{{ plugin|capfirst }} Plugin Versions', canvas_id: '{{ plugin }}-versions', url: '/plugin_stats/{{ plugin }}/'},
+{% endfor %}
 ].forEach((item) => {
     const element = document.getElementById(item.canvas_id);
     const chart = new Chart(element, {
@@ -127,29 +130,6 @@ const age_count_chart = new Chart(age_count_element, {
         }
     }
 });
-
-// Plugin Versions
-const plugins_data = JSON.parse(document.getElementById("plugins-data").textContent);
-{% for plugin in PLUGINS %}
-const {{ plugin }}_versions_element = document.getElementById("{{ plugin }}-versions");
-const {{ plugin }}_versions_chart = new Chart({{ plugin }}_versions_element, {
-    type: 'line',
-    data: {
-        datasets: plugins_data.{{ plugin }}
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: "{{ plugin|capfirst }} Plugin Versions"
-            }
-        },
-        scales: {
-            x: { type: 'time' }
-        }
-    }
-});
-{% endfor %}
 
 // Worker Chart
 const worker_element = document.getElementById("worker");

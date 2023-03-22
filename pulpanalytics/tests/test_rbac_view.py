@@ -51,10 +51,10 @@ def test_data(db, client, measure):
     assert response.json() == {
         "labels": [str(date)],
         "datasets": [
-            {"data": [6], "fill": "origin", "label": "<= 0"},
-            {"data": [7], "fill": "-1", "label": "<= 3"},
-            {"data": [6], "fill": "-1", "label": "<= 4"},
-            {"data": [4], "fill": "-1", "label": "<= 5"},
+            {"data": [6], "fill": "origin", "label": "0"},
+            {"data": [7], "fill": "-1", "label": "3"},
+            {"data": [6], "fill": "-1", "label": "4"},
+            {"data": [4], "fill": "-1", "label": "5"},
         ],
     }
 
@@ -80,8 +80,8 @@ def test_data_bucket(db, client, measure):
     assert response.json() == {
         "labels": [str(date)],
         "datasets": [
-            {"data": [6], "fill": "origin", "label": "<= 0"},
-            {"data": [13], "fill": "-1", "label": "<= 4"},
-            {"data": [4], "fill": "-1", "label": "<= 8"},
+            {"data": [6], "fill": "origin", "label": "0"},
+            {"data": [13], "fill": "-1", "label": "1-4"},
+            {"data": [4], "fill": "-1", "label": "5-8"},
         ],
     }

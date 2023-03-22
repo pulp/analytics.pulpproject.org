@@ -13,6 +13,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from git import Repo
+from packaging.version import parse as parse_version
 
 from pulpanalytics.analytics_pb2 import Analytics
 from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
@@ -218,6 +219,45 @@ def _add_postgresql_version(context, daily_summary):
 
 
 @require_GET
+def plugin_stats_view(request, plugin):
+    if plugin in PLUGINS:
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        z_stream = request.GET.get("z_stream")
+        labels = []
+        counts = defaultdict(list)
+        qs = DailySummary.objects.order_by("date")
+        if start_date is not None:
+            qs = qs.filter(date__gte=start_date)
+        if end_date is not None:
+            qs = qs.filter(date__lte=end_date)
+        for index, daily_summary in enumerate(qs):
+            if z_stream:
+                plugin_stats = daily_summary.summary.xyz_component
+            else:
+                plugin_stats = daily_summary.summary.xy_component
+            labels.append(daily_summary.date)
+            for item in plugin_stats:
+                if item.name != plugin:
+                    continue
+                dataset = counts[item.version]
+                while len(dataset) <= index:
+                    dataset.append(0)
+                dataset[index] += item.count
+        for dataset in counts.values():
+            while len(dataset) <= index:
+                dataset.append(0)
+        datasets = [
+            {"label": key, "data": counts[key], "fill": "-1"}
+            for key in sorted(counts.keys(), key=parse_version, reverse=True)
+        ]
+        if datasets:
+            datasets[0]["fill"] = "origin"
+        return JsonResponse({"labels": labels, "datasets": datasets})
+    raise Http404("Not found")
+
+
+@require_GET
 def rbac_stats_view(request, measure):
     if measure in ["users", "groups", "domains", "custom_access_policies", "custom_roles"]:
         start_date = request.GET.get("start_date")
@@ -246,9 +286,16 @@ def rbac_stats_view(request, measure):
             while len(dataset) <= index:
                 dataset.append(0)
         datasets = [
-            {"label": f"<= {key}", "data": counts[key], "fill": "-1"}
-            for key in sorted(counts.keys())
+            {"label": str(key), "data": counts[key], "fill": "-1"} for key in sorted(counts.keys())
         ]
+        if bucket:
+            last_label = 0
+            for dataset in datasets:
+                label = int(dataset["label"])
+                if last_label < label:
+                    dataset["label"] = f"{last_label}-{label}"
+                last_label = label + 1
+
         if datasets:
             datasets[0]["fill"] = "origin"
         return JsonResponse({"labels": labels, "datasets": datasets})

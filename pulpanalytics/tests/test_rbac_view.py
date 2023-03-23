@@ -67,9 +67,11 @@ def test_data_bucket(db, client, measure):
     summary = Summary()
     stats = getattr(summary.rbac_stats, measure)
     stats.add(number=4, count=6)
-    stats.add(number=5, count=4)
+    stats.add(number=17, count=4)
     stats.add(number=0, count=6)
     stats.add(number=3, count=7)
+    stats.add(number=1, count=8)
+    stats.add(number=2, count=9)
     DailySummary.objects.create(date=date, summary=summary)
 
     response = client.get(
@@ -81,7 +83,9 @@ def test_data_bucket(db, client, measure):
         "labels": [str(date)],
         "datasets": [
             {"data": [6], "fill": "origin", "label": "0"},
-            {"data": [13], "fill": "-1", "label": "1-4"},
-            {"data": [4], "fill": "-1", "label": "5-8"},
+            {"data": [8], "fill": "-1", "label": "1"},
+            {"data": [9], "fill": "-1", "label": "2"},
+            {"data": [13], "fill": "-1", "label": "3-4"},
+            {"data": [4], "fill": "-1", "label": "5-32"},
         ],
     }

@@ -186,24 +186,26 @@ def _get_postgresql_version_string_from_int(postgresql_version_int):
         minor_version = postgresql_version_int % 10000
         return f"{major_version}.{minor_version}"
     else:  # It's < 10.0
-        version_str = str(postgresql_version_int)
+        version_str = f"{postgresql_version_int:05}"
         major_version = int(version_str[:1])
         minor_version = int(version_str[1:3])
         bugfix_version = int(version_str[3:])
         return f"{major_version}.{minor_version}.{bugfix_version}"
 
 
-def _add_postgresql_version(context, daily_summary):
+@require_GET
+def postgresql_versions_view(request):
+    date = request.GET.get("date")
+    qs = DailySummary.objects.order_by("date")
+    if date is not None:
+        qs = qs.filter(date__lte=date)
+    daily_summary = qs.last()
     if daily_summary is None:
-        return
-
+        return JsonResponse({})
     data = sorted([(item.version, item.count) for item in daily_summary.summary.postgresql_version])
-    for item in data:
-        # Raw data is kept as an int, and the graphs use human-readable postgresql version strings
-        version_string = _get_postgresql_version_string_from_int(item[0])
-
-        context["postgresql_versions_labels"].append(version_string)
-        context["postgresql_versions_count"].append(item[1])
+    labels = [_get_postgresql_version_string_from_int(item[0]) for item in data]
+    datasets = [{"data": [item[1] for item in data]}]
+    return JsonResponse({"labels": labels, "datasets": datasets})
 
 
 @require_GET
@@ -305,8 +307,6 @@ class RootView(View):
             "postgresql_versions_labels": [],
         }
         _add_demography(context, DailySummary.objects.order_by("date").last())
-
-        _add_postgresql_version(context, DailySummary.objects.order_by("date").last())
 
         for daily_summary in DailySummary.objects.order_by("date"):
             _add_age_data(context, daily_summary)

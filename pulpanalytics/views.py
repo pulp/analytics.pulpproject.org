@@ -96,18 +96,6 @@ def _label_data_for_key(context, data_key, fill=False):
     context[data_key] = new_data
 
 
-def _add_xy_versions_data(context, daily_summary):
-    xy_components = daily_summary.summary.xy_component
-    for item in xy_components:
-        if item.name in PLUGINS:
-            context[f"{item.name}_xy_versions"][item.version].append(
-                {
-                    "x": daily_summary.epoch_ms_timestamp(),
-                    "y": item.count,
-                }
-            )
-
-
 def _add_demography(context, daily_summary):
     def _accumulator(prev, value):
         return value | {"count": prev["count"] + value["count"]}
@@ -316,7 +304,6 @@ class RootView(View):
             "postgresql_versions_count": [],
             "postgresql_versions_labels": [],
         }
-        context.update({f"{plugin}_xy_versions": defaultdict(list) for plugin in PLUGINS})
         _add_demography(context, DailySummary.objects.order_by("date").last())
 
         _add_postgresql_version(context, DailySummary.objects.order_by("date").last())
@@ -325,12 +312,7 @@ class RootView(View):
             _add_age_data(context, daily_summary)
             _add_workers_data(context, daily_summary)
             _add_content_apps_data(context, daily_summary)
-            _add_xy_versions_data(context, daily_summary)
 
-        context["plugin_xy_versions"] = {}
-        for plugin in PLUGINS:
-            _label_data_for_key(context, f"{plugin}_xy_versions")
-            context["plugin_xy_versions"][plugin] = context.pop(f"{plugin}_xy_versions")
         _label_data_for_key(context, "age_count", fill=True)
 
         context["deployment"] = settings.PULP_DEPLOYMENT

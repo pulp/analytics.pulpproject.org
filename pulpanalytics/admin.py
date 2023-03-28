@@ -1,10 +1,8 @@
 from django.contrib import admin
 
-from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
+from pulpanalytics.models import Component, DailySummary, System
 
 admin.site.register(Component)
-admin.site.register(OnlineContentApps)
-admin.site.register(OnlineWorkers)
 admin.site.register(System)
 
 

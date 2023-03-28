@@ -14,6 +14,10 @@ class System(models.Model):
     domains = models.PositiveIntegerField(null=True)
     custom_access_policies = models.PositiveIntegerField(null=True)
     custom_roles = models.PositiveIntegerField(null=True)
+    content_app_processes = models.PositiveIntegerField(null=True)
+    content_app_hosts = models.PositiveIntegerField(null=True)
+    worker_processes = models.PositiveIntegerField(null=True)
+    worker_hosts = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return f"SystemID={self.system_id}, Created={self.created}"
@@ -35,30 +39,6 @@ class Component(models.Model):
 
     def __str__(self):
         return f"SystemID={self.system.system_id}, Name={self.name}, Version={self.version}"
-
-
-class OnlineContentApps(models.Model):
-    processes = models.IntegerField()
-    hosts = models.IntegerField()
-    system = models.ForeignKey(System, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name_plural = "online content apps"
-
-    def __str__(self):
-        return f"SystemID={self.system.system_id}, Processes={self.processes}, Hosts={self.hosts}"
-
-
-class OnlineWorkers(models.Model):
-    processes = models.IntegerField()
-    hosts = models.IntegerField()
-    system = models.ForeignKey(System, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name_plural = "online workers"
-
-    def __str__(self):
-        return f"SystemID={self.system.system_id}, Processes={self.processes}, Hosts={self.hosts}"
 
 
 class DailySummary(models.Model):

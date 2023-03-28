@@ -4,7 +4,7 @@ import pytest
 from django.core.management import call_command
 from django.utils import timezone
 
-from pulpanalytics.models import DailySummary, OnlineWorkers, System
+from pulpanalytics.models import DailySummary, System
 from pulpanalytics.summary_pb2 import Summary
 
 SYSTEM_ID = "00000000000000000000000000000000"
@@ -53,8 +53,9 @@ def test_summary_age(yesterday, db, persistent_min_age_days):
 def test_summary_worker_count(yesterday, db, persistent_min_age_days):
     assert not DailySummary.objects.exists()
     with yesterday():
-        system = System.objects.create(system_id=SYSTEM_ID, postgresql_version=0)
-        OnlineWorkers.objects.create(system=system, hosts=1, processes=2)
+        System.objects.create(
+            system_id=SYSTEM_ID, postgresql_version=0, worker_hosts=1, worker_processes=2
+        )
 
     call_command("summarize")
     daily_summary = DailySummary.objects.order_by("date").last()

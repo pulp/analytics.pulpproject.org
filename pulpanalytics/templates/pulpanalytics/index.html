@@ -23,7 +23,7 @@
   <canvas id="content-app"></canvas>
   <canvas id="demography"></canvas>
   <canvas id="age-count"></canvas>
-  <canvas id="postgresql-version"></canvas>
+  <canvas id="postgresql-versions-graph"></canvas>
   <canvas id="users-graph"></canvas>
   <canvas id="groups-graph"></canvas>
   <canvas id="domains-graph"></canvas>
@@ -35,19 +35,13 @@
 
 {{ age_count|json_script:"age-count-data" }}
 
-{{ plugin_xy_versions|json_script:"plugins-data" }}
-
-{{ postgresql_versions_count|json_script:"postgresql-version-count-data" }}
-
-{{ postgresql_versions_labels|json_script:"postgresql-version-label-data" }}
-
 <script>
 
 // Add autocolor support
 const autocolors = window['chartjs-plugin-autocolors'];
 Chart.register(autocolors);
 
-// rbac_stats
+// Line Charts
 [
     {title: 'Users', canvas_id: 'users-graph', url: '/rbac_stats/users/?start_date=2023-03-10&bucket=1'},
     {title: 'Groups', canvas_id: 'groups-graph', url: '/rbac_stats/groups/?start_date=2023-03-10&bucket=1'},
@@ -55,12 +49,12 @@ Chart.register(autocolors);
     {title: 'Custom Access Policies', canvas_id: 'custom-access-policies-graph', url: '/rbac_stats/custom_access_policies/?start_date=2023-03-10&bucket=1'},
     {title: 'Custom Roles', canvas_id: 'custom-roles-graph', url: '/rbac_stats/custom_roles/?start_date=2023-03-10&bucket=1'},
 {% for plugin in PLUGINS %}
-  {title: '{{ plugin|capfirst }} Plugin Versions', canvas_id: '{{ plugin }}-versions', url: '/plugin_stats/{{ plugin }}/'},
+    {title: '{{ plugin|capfirst }} Plugin Versions', canvas_id: '{{ plugin }}-versions', url: '/plugin_stats/{{ plugin }}/'},
 {% endfor %}
 ].forEach((item) => {
     const element = document.getElementById(item.canvas_id);
     const chart = new Chart(element, {
-        type: 'line',
+        type: item.type || 'line',
         data: {},
         options: {
             plugins: {
@@ -73,6 +67,31 @@ Chart.register(autocolors);
                 x: { type: 'time', time: { unit: 'day' } },
                 y: { beginAtZero: true, stacked: true }
             }
+        }
+    });
+    fetch(item.url).then(res => res.json()).then(data => {
+        chart.data = data;
+        chart.update();
+    });
+});
+// Pie charts
+[
+    {title: 'Postgresql Versions', canvas_id: 'postgresql-versions-graph', url: '/postgresql_versions'},
+].forEach((item) => {
+    const element = document.getElementById(item.canvas_id);
+    const chart = new Chart(element, {
+        type: 'pie',
+        data: {},
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: item.title
+                },
+                autocolors: {
+                    mode: 'data'
+                }
+            },
         }
     });
     fetch(item.url).then(res => res.json()).then(data => {
@@ -180,31 +199,6 @@ const content_app_chart = new Chart(content_app_element, {
         scales: {
             x: { type: 'time' }
         }
-    }
-});
-
-// Postgresql Version Chart
-const postgresql_version_element = document.getElementById("postgresql-version");
-const postgresql_version_count_data = JSON.parse(document.getElementById("postgresql-version-count-data").textContent);
-const postgresql_version_label_data = JSON.parse(document.getElementById("postgresql-version-label-data").textContent);
-const postgresql_version_chart = new Chart(postgresql_version_element, {
-    type: 'pie',
-    data: {
-        datasets: [{
-            data: postgresql_version_count_data,
-        }],
-        labels: postgresql_version_label_data
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: "Postgresql Versions"
-            },
-            autocolors: {
-                mode: 'data'
-            }
-        },
     }
 });
 

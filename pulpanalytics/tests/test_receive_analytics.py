@@ -95,3 +95,23 @@ def test_collect_system_with_rbac(db, client):
     assert system.domains == 3
     assert system.custom_access_policies == 4
     assert system.custom_roles == 5
+
+
+def test_collect_system_with_services(db, client):
+    analytics = Analytics()
+    analytics.system_id = SYSTEM_ID
+    analytics.online_content_apps.processes = 1
+    analytics.online_content_apps.hosts = 2
+    analytics.online_workers.processes = 3
+    analytics.online_workers.hosts = 4
+
+    response = client.post(
+        reverse("pulpanalytics:index"), analytics.SerializeToString(), "application/octets"
+    )
+    assert response.status_code == 200, response.status_code
+
+    system = System.objects.filter(system_id=SYSTEM_ID).get()
+    assert system.content_app_processes == 1
+    assert system.content_app_hosts == 2
+    assert system.worker_processes == 3
+    assert system.worker_hosts == 4

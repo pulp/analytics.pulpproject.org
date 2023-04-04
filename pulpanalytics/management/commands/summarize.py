@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Avg, Count
 from django.db.models.functions import TruncDay
 
-from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
+from pulpanalytics.models import Component, DailySummary, System
 from pulpanalytics.summary_pb2 import Summary
 
 CLEANUP_AFTER_N_DAYS = 14
@@ -39,23 +39,27 @@ class Command(BaseCommand):
 
     @staticmethod
     def _handle_online_workers(systems, summary):
-        online_workers_qs = OnlineWorkers.objects.filter(system__in=systems)
-        online_workers_stats = online_workers_qs.aggregate(Avg("processes"), Avg("hosts"))
+        online_workers_stats = systems.aggregate(Avg("worker_processes"), Avg("worker_hosts"))
 
         try:
-            summary.online_workers.processes__avg = online_workers_stats["processes__avg"]
-            summary.online_workers.hosts__avg = online_workers_stats["hosts__avg"]
+            summary.online_workers.processes__avg = online_workers_stats["worker_processes__avg"]
+            summary.online_workers.hosts__avg = online_workers_stats["worker_hosts__avg"]
         except TypeError:
             pass
 
     @staticmethod
     def _handle_online_content_apps(systems, summary):
-        online_content_apps_qs = OnlineContentApps.objects.filter(system__in=systems)
-        online_content_apps_stats = online_content_apps_qs.aggregate(Avg("processes"), Avg("hosts"))
+        online_content_apps_stats = systems.aggregate(
+            Avg("content_app_processes"), Avg("content_app_hosts")
+        )
 
         try:
-            summary.online_content_apps.processes__avg = online_content_apps_stats["processes__avg"]
-            summary.online_content_apps.hosts__avg = online_content_apps_stats["hosts__avg"]
+            summary.online_content_apps.processes__avg = online_content_apps_stats[
+                "content_app_processes__avg"
+            ]
+            summary.online_content_apps.hosts__avg = online_content_apps_stats[
+                "content_app_hosts__avg"
+            ]
         except TypeError:
             pass
 

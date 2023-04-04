@@ -16,7 +16,7 @@ from git import Repo
 from packaging.version import parse as parse_version
 
 from pulpanalytics.analytics_pb2 import Analytics
-from pulpanalytics.models import Component, DailySummary, OnlineContentApps, OnlineWorkers, System
+from pulpanalytics.models import Component, DailySummary, System
 
 logger = logging.getLogger(__name__)
 
@@ -66,18 +66,6 @@ def _save_components(system, analytics):
             _check_component_version(component.version)
         components.append(Component(system=system, name=component.name, version=component.version))
     Component.objects.bulk_create(components)
-
-
-def _save_online_content_apps(system, analytics):
-    hosts = analytics.online_content_apps.hosts
-    processes = analytics.online_content_apps.processes
-    OnlineContentApps.objects.create(system=system, hosts=hosts, processes=processes)
-
-
-def _save_online_workers(system, analytics):
-    hosts = analytics.online_workers.hosts
-    processes = analytics.online_workers.processes
-    OnlineWorkers.objects.create(system=system, hosts=hosts, processes=processes)
 
 
 def _label_data_for_key(context, data_key, fill=False):
@@ -335,10 +323,12 @@ class RootView(View):
             system = System.objects.create(
                 system_id=analytics.system_id,
                 postgresql_version=analytics.postgresql_version,
+                content_app_processes=analytics.online_content_apps.processes,
+                content_app_hosts=analytics.online_content_apps.hosts,
+                worker_processes=analytics.online_workers.processes,
+                worker_hosts=analytics.online_workers.hosts,
                 **kwargs,
             )
             _save_components(system, analytics)
-            _save_online_content_apps(system, analytics)
-            _save_online_workers(system, analytics)
 
         return HttpResponse()

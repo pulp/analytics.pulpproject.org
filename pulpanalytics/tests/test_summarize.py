@@ -80,13 +80,13 @@ def test_summary_postgresql_version(yesterday, db):
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
 
-    expected_postgresql_version = [
-        Summary.PostgresqlVersion(version=0, count=1),
-        Summary.PostgresqlVersion(version=90200, count=2),
-        Summary.PostgresqlVersion(version=100001, count=1),
+    assert list(
+        daily_summary.postgresversioncount_set.order_by("version").values("version", "count")
+    ) == [
+        {"version": 0, "count": 1},
+        {"version": 90200, "count": 2},
+        {"version": 100001, "count": 1},
     ]
-
-    assert daily_summary.summary.postgresql_version == expected_postgresql_version
 
 
 def test_summary_rbac(yesterday, db):

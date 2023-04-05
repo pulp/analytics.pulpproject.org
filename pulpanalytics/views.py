@@ -165,34 +165,18 @@ def _add_content_apps_data(context, daily_summary):
     )
 
 
-def _get_postgresql_version_string_from_int(postgresql_version_int):
-    """See https://www.postgresql.org/docs/current/libpq-status.html#LIBPQ-PQSERVERVERSION"""
-    if postgresql_version_int == 0:
-        return "Unknown"
-    if postgresql_version_int >= 100000:  # It's 10.0+
-        major_version = postgresql_version_int // 10000
-        minor_version = postgresql_version_int % 10000
-        return f"{major_version}.{minor_version}"
-    else:  # It's < 10.0
-        version_str = f"{postgresql_version_int:05}"
-        major_version = int(version_str[:1])
-        minor_version = int(version_str[1:3])
-        bugfix_version = int(version_str[3:])
-        return f"{major_version}.{minor_version}.{bugfix_version}"
-
-
 @require_GET
 def postgresql_versions_view(request):
     date = request.GET.get("date")
     qs = DailySummary.objects.order_by("date")
     if date is not None:
         qs = qs.filter(date__lte=date)
-    daily_summary = qs.last()
+    daily_summary = qs.prefetch_related("postgresversioncount_set").last()
     if daily_summary is None:
         return JsonResponse({})
-    data = sorted([(item.version, item.count) for item in daily_summary.summary.postgresql_version])
-    labels = [_get_postgresql_version_string_from_int(item[0]) for item in data]
-    datasets = [{"data": [item[1] for item in data]}]
+    data = daily_summary.postgresversioncount_set.order_by("version")
+    labels = [item.pretty_version for item in data]
+    datasets = [{"data": [item.count for item in data]}]
     return JsonResponse({"labels": labels, "datasets": datasets})
 
 

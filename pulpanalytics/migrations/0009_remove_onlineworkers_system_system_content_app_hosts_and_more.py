@@ -3,7 +3,7 @@
 from django.db import migrations, models
 
 
-def fold_service_counts_into_system_up(apps, schema):
+def fold_service_counts_into_system_up(apps, schema_editor):
     System = apps.get_model("pulpanalytics", "System")
     OnlineContentApps = apps.get_model("pulpanalytics", "OnlineContentApps")
     OnlineWorkers = apps.get_model("pulpanalytics", "OnlineWorkers")
@@ -30,7 +30,7 @@ def fold_service_counts_into_system_up(apps, schema):
     )
 
 
-def fold_service_counts_into_system_down(apps, schema):
+def fold_service_counts_into_system_down(apps, schema_editor):
     System = apps.get_model("pulpanalytics", "System")
     OnlineContentApps = apps.get_model("pulpanalytics", "OnlineContentApps")
     OnlineWorkers = apps.get_model("pulpanalytics", "OnlineWorkers")

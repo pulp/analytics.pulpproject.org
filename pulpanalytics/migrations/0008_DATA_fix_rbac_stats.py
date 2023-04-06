@@ -3,7 +3,7 @@
 from django.db import migrations
 
 
-def fix_collected_rbac_stats(apps, schema):
+def fix_collected_rbac_stats(apps, schema_editor):
     # Delete all the 0s from Systems that never reported rbac_stats
     System = apps.get_model("pulpanalytics", "System")
     Component = apps.get_model("pulpanalytics", "Component")

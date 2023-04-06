@@ -27,8 +27,6 @@ def test_no_data(db, client, measure):
     response = client.get(reverse("pulpanalytics:rbac_stats", kwargs={"measure": measure}))
 
     assert response.status_code == 200
-    print(date)
-    print(response.content)
     assert response.json() == {"labels": [str(date)], "datasets": []}
 
 

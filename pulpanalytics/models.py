@@ -42,7 +42,7 @@ class Component(models.Model):
 
 
 class DailySummary(models.Model):
-    date = models.DateField(unique=True)
+    date = models.DateField(primary_key=True)
     summary = ProtoBufField(serializer=Summary)
 
     class Meta:
@@ -68,3 +68,31 @@ class DailySummary(models.Model):
             "x": self.epoch_ms_timestamp(),
             "y": self.summary.online_content_apps.processes__avg,
         }
+
+
+class PostgresVersionCount(models.Model):
+    summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
+    version = models.PositiveIntegerField()
+    count = models.PositiveIntegerField()
+
+    @property
+    def pretty_version(self):
+        """See https://www.postgresql.org/docs/current/libpq-status.html#LIBPQ-PQSERVERVERSION"""
+        if self.version == 0:
+            return "Unknown"
+        if self.version >= 100000:  # It's 10.0+
+            major_version = self.version // 10000
+            minor_version = self.version % 10000
+            return f"{major_version}.{minor_version}"
+        else:  # It's < 10.0
+            version_str = f"{self.version:05}"
+            major_version = int(version_str[:1])
+            minor_version = int(version_str[1:3])
+            bugfix_version = int(version_str[3:])
+            return f"{major_version}.{minor_version}.{bugfix_version}"
+
+    def __str__(self):
+        return f"PostgreSQL version {self.pretty_version} date={self.summary_id} count={self.count}"
+
+    class Meta:
+        unique_together = (("summary", "version"),)

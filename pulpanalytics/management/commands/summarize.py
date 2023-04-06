@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.db.models import Avg, Count
 from django.db.models.functions import TruncDay
 
@@ -98,15 +99,13 @@ class Command(BaseCommand):
             age_count.count = entry["count"]
 
     @staticmethod
-    def _handle_postgresql_version(systems, summary):
+    def _handle_postgresql_version(systems, daily_summary):
         postgresql_dict = defaultdict(int)
         for system in systems:
             version = system.postgresql_version
             postgresql_dict[version] += 1
         for version, count in postgresql_dict.items():
-            new_postgresql_version_entry = summary.postgresql_version.add()
-            new_postgresql_version_entry.version = version
-            new_postgresql_version_entry.count = count
+            daily_summary.postgresversioncount_set.create(version=version, count=count)
 
     @staticmethod
     def _handle_rbac_stats(systems, summary):
@@ -169,10 +168,11 @@ class Command(BaseCommand):
                 self._handle_online_content_apps(persistent_systems, summary)
                 self._handle_components(persistent_systems, summary)
                 self._handle_age(systems, summary)
-                self._handle_postgresql_version(persistent_systems, summary)
                 self._handle_rbac_stats(persistent_systems, summary)
 
-            DailySummary.objects.create(date=next_summary_date, summary=summary)
+            with transaction.atomic():
+                daily_summary = DailySummary.objects.create(date=next_summary_date, summary=summary)
+                self._handle_postgresql_version(persistent_systems, daily_summary)
             print(f"Wrote summary for {next_summary_date}")
 
         last_night_midnight = datetime.today().replace(

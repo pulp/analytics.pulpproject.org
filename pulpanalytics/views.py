@@ -16,7 +16,7 @@ from git import Repo
 from packaging.version import parse as parse_version
 
 from pulpanalytics.analytics_pb2 import Analytics
-from pulpanalytics.models import Component, DailySummary, System
+from pulpanalytics.models import Component, DailySummary, DeploymentStats, System
 
 logger = logging.getLogger(__name__)
 
@@ -147,24 +147,6 @@ def _add_age_data(context, daily_summary):
         context["age_count"]["0"].append({"x": timestamp, "y": bucket[0]})
 
 
-def _add_workers_data(context, daily_summary):
-    context["online_workers_hosts_avg"].append(daily_summary.online_workers_hosts_avg_data_point())
-
-    context["online_workers_processes_avg"].append(
-        daily_summary.online_workers_processes_avg_data_point()
-    )
-
-
-def _add_content_apps_data(context, daily_summary):
-    context["online_content_apps_hosts_avg"].append(
-        daily_summary.online_content_apps_hosts_avg_data_point()
-    )
-
-    context["online_content_apps_processes_avg"].append(
-        daily_summary.online_content_apps_processes_avg_data_point()
-    )
-
-
 @require_GET
 def postgresql_versions_view(request):
     date = request.GET.get("date")
@@ -181,42 +163,69 @@ def postgresql_versions_view(request):
 
 
 @require_GET
+def deployment_stats_view(request, component):
+    if component not in ["worker", "content_app"]:
+        raise Http404("Not found")
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    qs = DeploymentStats.objects.order_by("summary_id")
+    if start_date is not None:
+        qs = qs.filter(summary_id__gte=start_date)
+    if end_date is not None:
+        qs = qs.filter(summary_id__lte=end_date)
+    labels = list(qs.values_list("summary_id", flat=True))
+    datasets = [
+        {
+            "label": "Mean Processes",
+            "data": list(qs.values_list(f"online_{component}_processes_avg", flat=True)),
+        },
+        {
+            "label": "Mean Hosts",
+            "data": list(qs.values_list(f"online_{component}_hosts_avg", flat=True)),
+        },
+    ]
+    return JsonResponse({"labels": labels, "datasets": datasets})
+
+
+@require_GET
 def plugin_stats_view(request, plugin):
-    if plugin in PLUGINS:
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
-        z_stream = request.GET.get("z_stream")
-        labels = []
-        counts = defaultdict(list)
-        qs = DailySummary.objects.order_by("date")
-        if start_date is not None:
-            qs = qs.filter(date__gte=start_date)
-        if end_date is not None:
-            qs = qs.filter(date__lte=end_date)
-        for index, daily_summary in enumerate(qs):
-            if z_stream:
-                plugin_stats = daily_summary.summary.xyz_component
-            else:
-                plugin_stats = daily_summary.summary.xy_component
-            labels.append(daily_summary.date)
-            for item in plugin_stats:
-                if item.name != plugin:
-                    continue
-                dataset = counts[item.version]
-                while len(dataset) <= index:
-                    dataset.append(0)
-                dataset[index] += item.count
-        for dataset in counts.values():
+    if plugin not in PLUGINS:
+        raise Http404("Not found")
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    z_stream = request.GET.get("z_stream")
+    labels = []
+    counts = defaultdict(list)
+    qs = DailySummary.objects.order_by("date")
+    if start_date is not None:
+        qs = qs.filter(date__gte=start_date)
+    if end_date is not None:
+        qs = qs.filter(date__lte=end_date)
+    for index, daily_summary in enumerate(qs):
+        if z_stream:
+            plugin_stats = daily_summary.summary.xyz_component
+        else:
+            plugin_stats = daily_summary.summary.xy_component
+        labels.append(daily_summary.date)
+        for item in plugin_stats:
+            if item.name != plugin:
+                continue
+            dataset = counts[item.version]
             while len(dataset) <= index:
                 dataset.append(0)
-        datasets = [
-            {"label": key, "data": counts[key], "fill": "-1"}
-            for key in sorted(counts.keys(), key=parse_version, reverse=True)
-        ]
-        if datasets:
-            datasets[0]["fill"] = "origin"
-        return JsonResponse({"labels": labels, "datasets": datasets})
-    raise Http404("Not found")
+            dataset[index] += item.count
+    for dataset in counts.values():
+        while len(dataset) <= index:
+            dataset.append(0)
+    datasets = [
+        {"label": key, "data": counts[key], "fill": "-1"}
+        for key in sorted(counts.keys(), key=parse_version, reverse=True)
+    ]
+    if datasets:
+        datasets[0]["fill"] = "origin"
+    return JsonResponse({"labels": labels, "datasets": datasets})
 
 
 @require_GET
@@ -270,20 +279,12 @@ class RootView(View):
         template = loader.get_template("pulpanalytics/index.html")
         context = {
             "PLUGINS": PLUGINS,
-            "online_workers_hosts_avg": [],
-            "online_workers_processes_avg": [],
-            "online_content_apps_hosts_avg": [],
-            "online_content_apps_processes_avg": [],
             "age_count": defaultdict(list),
-            "postgresql_versions_count": [],
-            "postgresql_versions_labels": [],
         }
         _add_demography(context, DailySummary.objects.order_by("date").last())
 
         for daily_summary in DailySummary.objects.order_by("date"):
             _add_age_data(context, daily_summary)
-            _add_workers_data(context, daily_summary)
-            _add_content_apps_data(context, daily_summary)
 
         _label_data_for_key(context, "age_count", fill=True)
 

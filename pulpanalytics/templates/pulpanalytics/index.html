@@ -21,8 +21,8 @@
   {% for plugin in PLUGINS %}
   <canvas id="{{plugin}}-versions"></canvas>
   {% endfor %}
-  <canvas id="worker"></canvas>
-  <canvas id="content-app"></canvas>
+  <canvas id="worker-graph"></canvas>
+  <canvas id="content-app-graph"></canvas>
   <canvas id="demography"></canvas>
   <canvas id="age-count"></canvas>
   <canvas id="postgresql-versions-graph"></canvas>
@@ -45,6 +45,8 @@ Chart.register(autocolors);
 
 // Line Charts
 [
+    {title: 'Online Content Apps', canvas_id: 'content-app-graph', url: '/deployment_stats/content_app/'},
+    {title: 'Online Workers', canvas_id: 'worker-graph', url: '/deployment_stats/worker/'},
     {title: 'Users', canvas_id: 'users-graph', url: '/rbac_stats/users/?start_date=2023-03-10&bucket=1'},
     {title: 'Groups', canvas_id: 'groups-graph', url: '/rbac_stats/groups/?start_date=2023-03-10&bucket=1'},
     {title: 'Domains', canvas_id: 'domains-graph', url: '/rbac_stats/domains/?start_date=2023-03-10&bucket=1'},
@@ -148,58 +150,6 @@ const age_count_chart = new Chart(age_count_element, {
         scales: {
             x: { type: 'time' },
             y: { beginAtZero: true, stacked: true }
-        }
-    }
-});
-
-// Worker Chart
-const worker_element = document.getElementById("worker");
-const worker_chart = new Chart(worker_element, {
-    type: 'line',
-    data: {
-        datasets: [{
-            label: "Mean Processes",
-            data: {{ online_content_apps_processes_avg|safe }}
-        }, {
-            label: "Mean Hosts",
-            data: {{ online_content_apps_hosts_avg|safe }}
-        }]
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: "Content Apps"
-            }
-        },
-        scales: {
-            x: { type: 'time' }
-        }
-    }
-});
-
-// Content App Chart
-const content_app_element = document.getElementById("content-app");
-const content_app_chart = new Chart(content_app_element, {
-    type: 'line',
-    data: {
-        datasets: [{
-            label: "Mean Worker Processes",
-            data: {{ online_workers_processes_avg|safe }}
-        }, {
-            label: "Mean Worker Hosts",
-            data: {{ online_workers_hosts_avg|safe }}
-        }]
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: "Online Workers"
-            }
-        },
-        scales: {
-            x: { type: 'time' }
         }
     }
 });

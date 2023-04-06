@@ -54,20 +54,13 @@ class DailySummary(models.Model):
     def epoch_ms_timestamp(self):
         return int(self.date.strftime("%s")) * 1000
 
-    def online_workers_hosts_avg_data_point(self):
-        return {"x": self.epoch_ms_timestamp(), "y": self.summary.online_workers.hosts__avg}
 
-    def online_workers_processes_avg_data_point(self):
-        return {"x": self.epoch_ms_timestamp(), "y": self.summary.online_workers.processes__avg}
-
-    def online_content_apps_hosts_avg_data_point(self):
-        return {"x": self.epoch_ms_timestamp(), "y": self.summary.online_content_apps.hosts__avg}
-
-    def online_content_apps_processes_avg_data_point(self):
-        return {
-            "x": self.epoch_ms_timestamp(),
-            "y": self.summary.online_content_apps.processes__avg,
-        }
+class DeploymentStats(models.Model):
+    summary = models.OneToOneField(DailySummary, on_delete=models.CASCADE, primary_key=True)
+    online_worker_hosts_avg = models.FloatField(null=True, blank=True)
+    online_worker_processes_avg = models.FloatField(null=True, blank=True)
+    online_content_app_hosts_avg = models.FloatField(null=True, blank=True)
+    online_content_app_processes_avg = models.FloatField(null=True, blank=True)
 
 
 class PostgresVersionCount(models.Model):

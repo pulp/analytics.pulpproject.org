@@ -54,18 +54,23 @@ def test_summary_worker_count(yesterday, db, persistent_min_age_days):
     assert not DailySummary.objects.exists()
     with yesterday():
         System.objects.create(
-            system_id=SYSTEM_ID, postgresql_version=0, worker_hosts=1, worker_processes=2
+            system_id=uuid.uuid4(), postgresql_version=0, worker_hosts=1, worker_processes=2
         )
+        System.objects.create(system_id=uuid.uuid4(), postgresql_version=0)
 
     call_command("summarize")
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
-    if persistent_min_age_days == 1:
-        assert daily_summary.summary.online_workers == Summary.OnlineWorkers()
+    if persistent_min_age_days >= 1:
+        assert daily_summary.deploymentstats.online_worker_processes_avg is None
+        assert daily_summary.deploymentstats.online_worker_hosts_avg is None
+        assert daily_summary.deploymentstats.online_content_app_processes_avg is None
+        assert daily_summary.deploymentstats.online_content_app_hosts_avg is None
     else:
-        assert daily_summary.summary.online_workers == Summary.OnlineWorkers(
-            processes__avg=2, hosts__avg=1
-        )
+        assert daily_summary.deploymentstats.online_worker_processes_avg == 2
+        assert daily_summary.deploymentstats.online_worker_hosts_avg == 1.0
+        assert daily_summary.deploymentstats.online_content_app_processes_avg is None
+        assert daily_summary.deploymentstats.online_content_app_hosts_avg is None
 
 
 def test_summary_postgresql_version(yesterday, db):

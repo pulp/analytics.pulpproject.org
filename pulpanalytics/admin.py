@@ -5,11 +5,18 @@ from django.core.management import call_command
 from django.template.response import TemplateResponse
 from django.urls import path
 
-from pulpanalytics.models import Component, DailySummary, PostgresVersionCount, System
+from pulpanalytics.models import (
+    Component,
+    DailySummary,
+    DeploymentStats,
+    PostgresVersionCount,
+    System,
+)
 
 admin.site.register(Component)
 admin.site.register(System)
 admin.site.register(PostgresVersionCount)
+admin.site.register(DeploymentStats)
 
 
 @admin.register(DailySummary)

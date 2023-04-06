@@ -8,7 +8,7 @@ from django.db import transaction
 from django.db.models import Avg, Count
 from django.db.models.functions import TruncDay
 
-from pulpanalytics.models import Component, DailySummary, System
+from pulpanalytics.models import Component, DailySummary, DeploymentStats, System
 from pulpanalytics.summary_pb2 import Summary
 
 CLEANUP_AFTER_N_DAYS = 14
@@ -39,30 +39,21 @@ class Command(BaseCommand):
             return
 
     @staticmethod
-    def _handle_online_workers(systems, summary):
-        online_workers_stats = systems.aggregate(Avg("worker_processes"), Avg("worker_hosts"))
-
-        try:
-            summary.online_workers.processes__avg = online_workers_stats["worker_processes__avg"]
-            summary.online_workers.hosts__avg = online_workers_stats["worker_hosts__avg"]
-        except TypeError:
-            pass
-
-    @staticmethod
-    def _handle_online_content_apps(systems, summary):
-        online_content_apps_stats = systems.aggregate(
-            Avg("content_app_processes"), Avg("content_app_hosts")
+    def _handle_deployment_stats(systems, daily_summary):
+        deployment_stats = systems.aggregate(
+            Avg("worker_processes"),
+            Avg("worker_hosts"),
+            Avg("content_app_processes"),
+            Avg("content_app_hosts"),
         )
 
-        try:
-            summary.online_content_apps.processes__avg = online_content_apps_stats[
-                "content_app_processes__avg"
-            ]
-            summary.online_content_apps.hosts__avg = online_content_apps_stats[
-                "content_app_hosts__avg"
-            ]
-        except TypeError:
-            pass
+        DeploymentStats.objects.create(
+            summary=daily_summary,
+            online_worker_processes_avg=deployment_stats["worker_processes__avg"],
+            online_worker_hosts_avg=deployment_stats["worker_hosts__avg"],
+            online_content_app_processes_avg=deployment_stats["content_app_processes__avg"],
+            online_content_app_hosts_avg=deployment_stats["content_app_hosts__avg"],
+        )
 
     @staticmethod
     def _handle_components(systems, summary):
@@ -164,8 +155,6 @@ class Command(BaseCommand):
 
             summary = Summary()
             if systems.exists():
-                self._handle_online_workers(persistent_systems, summary)
-                self._handle_online_content_apps(persistent_systems, summary)
                 self._handle_components(persistent_systems, summary)
                 self._handle_age(systems, summary)
                 self._handle_rbac_stats(persistent_systems, summary)
@@ -173,6 +162,7 @@ class Command(BaseCommand):
             with transaction.atomic():
                 daily_summary = DailySummary.objects.create(date=next_summary_date, summary=summary)
                 self._handle_postgresql_version(persistent_systems, daily_summary)
+                self._handle_deployment_stats(persistent_systems, daily_summary)
             print(f"Wrote summary for {next_summary_date}")
 
         last_night_midnight = datetime.today().replace(

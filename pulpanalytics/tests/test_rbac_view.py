@@ -6,9 +6,11 @@ from pulpanalytics.models import DailySummary
 from pulpanalytics.summary_pb2 import Summary
 
 
-@pytest.mark.parametrize(
-    "measure", ["users", "groups", "domains", "custom_access_policies", "custom_roles"]
-)
+@pytest.fixture(params=["users", "groups", "domains", "custom_access_policies", "custom_roles"])
+def measure(request):
+    return request.param
+
+
 def test_empty_summary(db, client, measure):
     response = client.get(reverse("pulpanalytics:rbac_stats", kwargs={"measure": measure}))
 
@@ -16,9 +18,6 @@ def test_empty_summary(db, client, measure):
     assert response.json() == {"labels": [], "datasets": []}
 
 
-@pytest.mark.parametrize(
-    "measure", ["users", "groups", "domains", "custom_access_policies", "custom_roles"]
-)
 def test_no_data(db, client, measure):
     date = timezone.now().date()
     summary = Summary()
@@ -30,9 +29,6 @@ def test_no_data(db, client, measure):
     assert response.json() == {"labels": [str(date)], "datasets": []}
 
 
-@pytest.mark.parametrize(
-    "measure", ["users", "groups", "domains", "custom_access_policies", "custom_roles"]
-)
 def test_data(db, client, measure):
     date = timezone.now().date()
     summary = Summary()
@@ -57,9 +53,6 @@ def test_data(db, client, measure):
     }
 
 
-@pytest.mark.parametrize(
-    "measure", ["users", "groups", "domains", "custom_access_policies", "custom_roles"]
-)
 def test_data_bucket(db, client, measure):
     date = timezone.now().date()
     summary = Summary()

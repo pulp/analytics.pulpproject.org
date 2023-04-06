@@ -42,7 +42,7 @@ class Component(models.Model):
 
 
 class DailySummary(models.Model):
-    date = models.DateField(unique=True)
+    date = models.DateField(primary_key=True)
     summary = ProtoBufField(serializer=Summary)
 
     class Meta:

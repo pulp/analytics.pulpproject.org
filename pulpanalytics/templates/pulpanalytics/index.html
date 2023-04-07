@@ -23,8 +23,8 @@
   {% endfor %}
   <canvas id="worker-graph"></canvas>
   <canvas id="content-app-graph"></canvas>
-  <canvas id="demography"></canvas>
-  <canvas id="age-count"></canvas>
+  <canvas id="demography-graph"></canvas>
+  <canvas id="systems-by-age-graph"></canvas>
   <canvas id="postgresql-versions-graph"></canvas>
   <canvas id="users-graph"></canvas>
   <canvas id="groups-graph"></canvas>
@@ -33,20 +33,17 @@
   <canvas id="custom-roles-graph"></canvas>
 </div>
 
-{{ demography|json_script:"demography-data" }}
-
-{{ age_count|json_script:"age-count-data" }}
-
 <script>
 
 // Add autocolor support
 const autocolors = window['chartjs-plugin-autocolors'];
 Chart.register(autocolors);
 
-// Line Charts
+// Line Charts (Timeseries)
 [
     {title: 'Online Content Apps', canvas_id: 'content-app-graph', url: '/deployment_stats/content_app/', stacked: false},
     {title: 'Online Workers', canvas_id: 'worker-graph', url: '/deployment_stats/worker/', stacked: false},
+    {title: 'Systems by age', canvas_id: 'systems-by-age-graph', url: '/systems_by_age/?start_date=2022-08-16&bucket=1', stacked: true},
     {title: 'Users', canvas_id: 'users-graph', url: '/rbac_stats/users/?start_date=2023-03-10&bucket=1', stacked: true},
     {title: 'Groups', canvas_id: 'groups-graph', url: '/rbac_stats/groups/?start_date=2023-03-10&bucket=1', stacked: true},
     {title: 'Domains', canvas_id: 'domains-graph', url: '/rbac_stats/domains/?start_date=2023-03-10&bucket=1', stacked: true},
@@ -78,9 +75,43 @@ Chart.register(autocolors);
         chart.update();
     });
 });
+
+// Lie Charts (linear)
+[
+    {title: 'Demography', canvas_id: 'demography-graph', url: '/demography/', stacked: false, x_label: 'system age (days)'},
+].forEach((item) => {
+    const element = document.getElementById(item.canvas_id);
+    const chart = new Chart(element, {
+        type: 'line',
+        data: {},
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: item.title
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: item.x_label
+                    }
+                },
+                y: { beginAtZero: true, stacked: item.stacked }
+            }
+        }
+    });
+    fetch(item.url).then(res => res.json()).then(data => {
+        chart.data = data;
+        chart.update();
+    });
+});
+
 // Pie charts
 [
-    {title: 'Postgresql Versions', canvas_id: 'postgresql-versions-graph', url: '/postgresql_versions'},
+    {title: 'Postgresql Versions', canvas_id: 'postgresql-versions-graph', url: '/postgresql_versions/'},
 ].forEach((item) => {
     const element = document.getElementById(item.canvas_id);
     const chart = new Chart(element, {
@@ -102,56 +133,6 @@ Chart.register(autocolors);
         chart.data = data;
         chart.update();
     });
-});
-
-// Demography
-const demography_element = document.getElementById("demography");
-const demography_data = JSON.parse(document.getElementById("demography-data").textContent);
-const demography_chart = new Chart(demography_element, {
-    type: 'line',
-    data: {
-        datasets: demography_data
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: 'Demography'
-            }
-        },
-        scales: {
-            x: {
-                type: 'linear',
-                title: {
-                    display: true,
-                    text: 'system age (days)'
-                }
-            },
-            y: { beginAtZero: true }
-        }
-    }
-});
-
-// System age
-const age_count_element = document.getElementById("age-count");
-const age_count_data = JSON.parse(document.getElementById("age-count-data").textContent);
-const age_count_chart = new Chart(age_count_element, {
-    type: 'line',
-    data: {
-        datasets: age_count_data
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: "Systems by age"
-            }
-        },
-        scales: {
-            x: { type: 'time' },
-            y: { beginAtZero: true, stacked: true }
-        }
-    }
 });
 
 </script>

@@ -68,85 +68,6 @@ def _save_components(system, analytics):
     Component.objects.bulk_create(components)
 
 
-def _label_data_for_key(context, data_key, fill=False):
-    new_data = []
-    for version, data in context[data_key].items():
-        new_data.append(
-            {
-                "label": version,
-                "data": data,
-            }
-        )
-        if fill:
-            new_data[-1]["fill"] = "-1"
-    if fill and new_data:
-        new_data[0]["fill"] = True
-    context[data_key] = new_data
-
-
-def _add_demography(context, daily_summary):
-    def _accumulator(prev, value):
-        return value | {"count": prev["count"] + value["count"]}
-
-    context["demography"] = []
-    if daily_summary is None:
-        return
-    raw_data = sorted(daily_summary.summary.age_count, key=lambda i: i.age, reverse=True)
-    if not raw_data:
-        # No data available
-        return
-    age = raw_data[0].age + 1
-    data = []
-    # Fill the gaps and transform to dicts
-    for item in raw_data:
-        while age > item.age:
-            data.append({"age": age, "count": 0})
-            age -= 1
-        data.append({"age": item.age, "count": item.count})
-        age -= 1
-
-    context["demography"].append(
-        {
-            "label": "count",
-            "data": data,
-            "parsing": {
-                "xAxisKey": "age",
-                "yAxisKey": "count",
-            },
-        }
-    )
-    context["demography"].append(
-        {
-            "label": "accumulated",
-            "data": list(accumulate(data, _accumulator)),
-            "parsing": {
-                "xAxisKey": "age",
-                "yAxisKey": "count",
-            },
-            "fill": True,
-        }
-    )
-
-
-def _add_age_data(context, daily_summary):
-    if daily_summary.summary.age_count:
-        timestamp = daily_summary.epoch_ms_timestamp()
-        bucket = [0, 0, 0, 0]
-        for item in daily_summary.summary.age_count:
-            if item.age <= 0:
-                bucket[0] += item.count
-            elif item.age <= 2:
-                bucket[1] += item.count
-            elif item.age <= 7:
-                bucket[2] += item.count
-            else:
-                bucket[3] += item.count
-        context["age_count"][">=8"].append({"x": timestamp, "y": bucket[3]})
-        context["age_count"]["3-7"].append({"x": timestamp, "y": bucket[2]})
-        context["age_count"]["1-2"].append({"x": timestamp, "y": bucket[1]})
-        context["age_count"]["0"].append({"x": timestamp, "y": bucket[0]})
-
-
 @require_GET
 def postgresql_versions_view(request):
     date = request.GET.get("date")
@@ -229,48 +150,139 @@ def plugin_stats_view(request, plugin):
 
 
 @require_GET
-def rbac_stats_view(request, measure):
-    if measure in ["users", "groups", "domains", "custom_access_policies", "custom_roles"]:
-        start_date = request.GET.get("start_date")
-        end_date = request.GET.get("end_date")
-        bucket = request.GET.get("bucket")
-        labels = []
-        counts = defaultdict(list)
-        qs = DailySummary.objects.order_by("date")
-        if start_date is not None:
-            qs = qs.filter(date__gte=start_date)
-        if end_date is not None:
-            qs = qs.filter(date__lte=end_date)
-        for index, daily_summary in enumerate(qs):
-            rbac_stats = daily_summary.summary.rbac_stats
-            labels.append(daily_summary.date)
-            for item in getattr(rbac_stats, measure):
-                if bucket and item.number:
-                    number = 1 << (item.number - 1).bit_length()
-                else:
-                    number = item.number
-                dataset = counts[number]
-                while len(dataset) <= index:
-                    dataset.append(0)
-                dataset[index] += item.count
-        for dataset in counts.values():
+def demography_view(request):
+    def _accumulator(prev, value):
+        return value | {"count": prev["count"] + value["count"]}
+
+    date = request.GET.get("date")
+    qs = DailySummary.objects.order_by("date")
+    if date is not None:
+        qs = qs.filter(date__lte=date)
+    daily_summary = qs.last()  # TODO prefetch the age related table
+    if daily_summary is None:
+        return JsonResponse({})
+    raw_data = sorted(daily_summary.summary.age_count, key=lambda i: i.age, reverse=True)
+    if not raw_data:
+        # No data available
+        return JsonResponse({})
+    age = raw_data[0].age + 1
+    data = []
+    # Fill the gaps and transform to dicts
+    for item in raw_data:
+        while age > item.age:
+            data.append({"age": age, "count": 0})
+            age -= 1
+        data.append({"age": item.age, "count": item.count})
+        age -= 1
+
+    datasets = [
+        {
+            "label": "count",
+            "data": data,
+            "parsing": {
+                "xAxisKey": "age",
+                "yAxisKey": "count",
+            },
+        },
+        {
+            "label": "accumulated",
+            "data": list(accumulate(data, _accumulator)),
+            "parsing": {
+                "xAxisKey": "age",
+                "yAxisKey": "count",
+            },
+            "fill": True,
+        },
+    ]
+    return JsonResponse({"datasets": datasets})
+
+
+@require_GET
+def systems_by_age_view(request):
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    bucket = request.GET.get("bucket")
+    labels = []
+    counts = defaultdict(list)
+    qs = DailySummary.objects.order_by("date")
+    if start_date is not None:
+        qs = qs.filter(date__gte=start_date)
+    if end_date is not None:
+        qs = qs.filter(date__lte=end_date)
+    for index, daily_summary in enumerate(qs):
+        age_count = daily_summary.summary.age_count
+        labels.append(daily_summary.date)
+        for item in age_count:
+            if bucket and item.age:
+                age = 1 << (item.age - 1).bit_length()
+            else:
+                age = item.age
+            dataset = counts[age]
             while len(dataset) <= index:
                 dataset.append(0)
-        datasets = [
-            {"label": str(key), "data": counts[key], "fill": "-1"} for key in sorted(counts.keys())
-        ]
-        if bucket:
-            last_label = 0
-            for dataset in datasets:
-                label = int(dataset["label"])
-                if last_label < label:
-                    dataset["label"] = f"{last_label}-{label}"
-                last_label = label + 1
+            dataset[index] += item.count
+    for dataset in counts.values():
+        while len(dataset) <= index:
+            dataset.append(0)
+    datasets = [
+        {"label": str(key), "data": counts[key], "fill": "-1"} for key in sorted(counts.keys())
+    ]
+    if bucket:
+        last_label = 0
+        for dataset in datasets:
+            label = int(dataset["label"])
+            if last_label < label:
+                dataset["label"] = f"{last_label}-{label}"
+            last_label = label + 1
 
-        if datasets:
-            datasets[0]["fill"] = "origin"
-        return JsonResponse({"labels": labels, "datasets": datasets})
-    raise Http404("Not found")
+    if datasets:
+        datasets[0]["fill"] = "origin"
+    return JsonResponse({"labels": labels, "datasets": datasets})
+
+
+@require_GET
+def rbac_stats_view(request, measure):
+    if measure not in ["users", "groups", "domains", "custom_access_policies", "custom_roles"]:
+        raise Http404("Not found")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    bucket = request.GET.get("bucket")
+    labels = []
+    counts = defaultdict(list)
+    qs = DailySummary.objects.order_by("date")
+    if start_date is not None:
+        qs = qs.filter(date__gte=start_date)
+    if end_date is not None:
+        qs = qs.filter(date__lte=end_date)
+    for index, daily_summary in enumerate(qs):
+        rbac_stats = daily_summary.summary.rbac_stats
+        labels.append(daily_summary.date)
+        for item in getattr(rbac_stats, measure):
+            if bucket and item.number:
+                number = 1 << (item.number - 1).bit_length()
+            else:
+                number = item.number
+            dataset = counts[number]
+            while len(dataset) <= index:
+                dataset.append(0)
+            dataset[index] += item.count
+    for dataset in counts.values():
+        while len(dataset) <= index:
+            dataset.append(0)
+    datasets = [
+        {"label": str(key), "data": counts[key], "fill": "-1"} for key in sorted(counts.keys())
+    ]
+    if bucket:
+        last_label = 0
+        for dataset in datasets:
+            label = int(dataset["label"])
+            if last_label < label:
+                dataset["label"] = f"{last_label}-{label}"
+            last_label = label + 1
+
+    if datasets:
+        datasets[0]["fill"] = "origin"
+    return JsonResponse({"labels": labels, "datasets": datasets})
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -279,18 +291,9 @@ class RootView(View):
         template = loader.get_template("pulpanalytics/index.html")
         context = {
             "PLUGINS": PLUGINS,
-            "age_count": defaultdict(list),
+            "deployment": settings.PULP_DEPLOYMENT,
+            "revision": _get_git_revision(),
         }
-        _add_demography(context, DailySummary.objects.order_by("date").last())
-
-        for daily_summary in DailySummary.objects.order_by("date"):
-            _add_age_data(context, daily_summary)
-
-        _label_data_for_key(context, "age_count", fill=True)
-
-        context["deployment"] = settings.PULP_DEPLOYMENT
-        context["revision"] = _get_git_revision()
-
         return HttpResponse(template.render(context, request))
 
     def post(self, request):

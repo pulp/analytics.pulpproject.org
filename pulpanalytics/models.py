@@ -51,9 +51,6 @@ class DailySummary(models.Model):
     def __str__(self):
         return f"Summary for {self.date}"
 
-    def epoch_ms_timestamp(self):
-        return int(self.date.strftime("%s")) * 1000
-
 
 class DeploymentStats(models.Model):
     summary = models.OneToOneField(DailySummary, on_delete=models.CASCADE, primary_key=True)

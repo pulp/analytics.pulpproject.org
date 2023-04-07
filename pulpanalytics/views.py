@@ -235,6 +235,7 @@ def systems_by_age_view(request):
                 dataset["label"] = f"{last_label}-{label}"
             last_label = label + 1
 
+    datasets.reverse()
     if datasets:
         datasets[0]["fill"] = "origin"
     return JsonResponse({"labels": labels, "datasets": datasets})

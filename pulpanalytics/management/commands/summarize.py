@@ -56,7 +56,7 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def _handle_components(systems, summary):
+    def _handle_components(systems, daily_summary):
         components_qs = Component.objects.filter(system__in=systems)
         for name in components_qs.values_list("name", flat=True).distinct():
             xy_dict = defaultdict(int)
@@ -69,16 +69,10 @@ class Command(BaseCommand):
                 xyz_dict[component.version] += 1
 
             for version, count in xy_dict.items():
-                xy_component = summary.xy_component.add()
-                xy_component.name = name
-                xy_component.version = version
-                xy_component.count = count
+                daily_summary.xyversioncount_set.create(name=name, version=version, count=count)
 
             for version, count in xyz_dict.items():
-                xyz_component = summary.xyz_component.add()
-                xyz_component.name = name
-                xyz_component.version = version
-                xyz_component.count = count
+                daily_summary.xyzversioncount_set.create(name=name, version=version, count=count)
 
     @staticmethod
     def _handle_age(systems, summary):
@@ -155,12 +149,12 @@ class Command(BaseCommand):
 
             summary = Summary()
             if systems.exists():
-                self._handle_components(persistent_systems, summary)
                 self._handle_age(systems, summary)
                 self._handle_rbac_stats(persistent_systems, summary)
 
             with transaction.atomic():
                 daily_summary = DailySummary.objects.create(date=next_summary_date, summary=summary)
+                self._handle_components(persistent_systems, daily_summary)
                 self._handle_postgresql_version(persistent_systems, daily_summary)
                 self._handle_deployment_stats(persistent_systems, daily_summary)
             print(f"Wrote summary for {next_summary_date}")

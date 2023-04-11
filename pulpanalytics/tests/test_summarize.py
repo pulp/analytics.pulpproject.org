@@ -73,6 +73,37 @@ def test_summary_worker_count(yesterday, db, persistent_min_age_days):
         assert daily_summary.deploymentstats.online_content_app_hosts_avg is None
 
 
+def test_summary_component_versions(yesterday, db):
+    assert not DailySummary.objects.exists()
+    with yesterday():
+        system1 = System.objects.create(system_id=uuid.uuid4())
+        system1.component_set.create(name="plugin1", version="1.0.0")
+        system1.component_set.create(name="plugin2", version="2.0.0")
+        system2 = System.objects.create(system_id=uuid.uuid4())
+        system2.component_set.create(name="plugin1", version="1.0.0")
+        system2.component_set.create(name="plugin3", version="3.0.0")
+        system3 = System.objects.create(system_id=uuid.uuid4())
+        system3.component_set.create(name="plugin1", version="1.0.1")
+        system3.component_set.create(name="plugin4", version="4.0.0")
+        System.objects.create(system_id=uuid.uuid4())
+
+    call_command("summarize")
+    daily_summary = DailySummary.objects.order_by("date").last()
+    assert daily_summary
+
+    assert daily_summary.xyversioncount_set.count() == 4
+    assert daily_summary.xyversioncount_set.get(name="plugin1", version="1.0").count == 3
+    assert daily_summary.xyversioncount_set.get(name="plugin2", version="2.0").count == 1
+    assert daily_summary.xyversioncount_set.get(name="plugin3", version="3.0").count == 1
+    assert daily_summary.xyversioncount_set.get(name="plugin4", version="4.0").count == 1
+    assert daily_summary.xyzversioncount_set.count() == 5
+    assert daily_summary.xyzversioncount_set.get(name="plugin1", version="1.0.0").count == 2
+    assert daily_summary.xyzversioncount_set.get(name="plugin1", version="1.0.1").count == 1
+    assert daily_summary.xyzversioncount_set.get(name="plugin2", version="2.0.0").count == 1
+    assert daily_summary.xyzversioncount_set.get(name="plugin3", version="3.0.0").count == 1
+    assert daily_summary.xyzversioncount_set.get(name="plugin4", version="4.0.0").count == 1
+
+
 def test_summary_postgresql_version(yesterday, db):
     assert not DailySummary.objects.exists()
     with yesterday():

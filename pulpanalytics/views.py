@@ -120,19 +120,21 @@ def plugin_stats_view(request, plugin):
     labels = []
     counts = defaultdict(list)
     qs = DailySummary.objects.order_by("date")
+    if z_stream:
+        qs = qs.prefetch_related("xyzversioncount_set")
+    else:
+        qs = qs.prefetch_related("xyversioncount_set")
     if start_date is not None:
         qs = qs.filter(date__gte=start_date)
     if end_date is not None:
         qs = qs.filter(date__lte=end_date)
     for index, daily_summary in enumerate(qs):
         if z_stream:
-            plugin_stats = daily_summary.summary.xyz_component
+            plugin_stats = daily_summary.xyzversioncount_set.filter(name=plugin)
         else:
-            plugin_stats = daily_summary.summary.xy_component
+            plugin_stats = daily_summary.xyversioncount_set.filter(name=plugin)
         labels.append(daily_summary.date)
         for item in plugin_stats:
-            if item.name != plugin:
-                continue
             dataset = counts[item.version]
             while len(dataset) <= index:
                 dataset.append(0)

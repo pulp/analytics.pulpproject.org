@@ -40,6 +40,10 @@ class Component(models.Model):
     def __str__(self):
         return f"SystemID={self.system.system_id}, Name={self.name}, Version={self.version}"
 
+    class Meta:
+        unique_together = [("system", "name")]
+        indexes = [models.Index(fields=["name"])]
+
 
 class DailySummary(models.Model):
     date = models.DateField(primary_key=True)
@@ -86,3 +90,26 @@ class PostgresVersionCount(models.Model):
 
     class Meta:
         unique_together = (("summary", "version"),)
+        indexes = [models.Index(fields=["summary"])]
+
+
+class XYVersionCount(models.Model):
+    summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
+    name = models.TextField()
+    version = models.TextField()
+    count = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = (("summary", "name", "version"),)
+        indexes = [models.Index(fields=["summary", "name"])]
+
+
+class XYZVersionCount(models.Model):
+    summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
+    name = models.TextField()
+    version = models.TextField()
+    count = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = (("summary", "name", "version"),)
+        indexes = [models.Index(fields=["summary", "name"])]

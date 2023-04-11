@@ -33,15 +33,14 @@ def test_no_data(db, client, plugin):
 def test_xy_data(db, client, plugin):
     date = timezone.now().date()
     summary = Summary()
-    xy_component = summary.xy_component
-    xy_component.add(name=plugin, version="1.2", count=1)
-    xy_component.add(name=plugin, version="1.4", count=2)
-    xy_component.add(name="other_plugin", version="1.5", count=7)
-    xy_component.add(name=plugin, version="2.0", count=3)
-    xy_component.add(name="other_plugin", version="2.3", count=6)
-    xy_component.add(name=plugin, version="0.5", count=4)
-    xy_component.add(name=plugin, version="2.3", count=5)
-    DailySummary.objects.create(date=date, summary=summary)
+    ds = DailySummary.objects.create(date=date, summary=summary)
+    ds.xyversioncount_set.create(name=plugin, version="1.2", count=1)
+    ds.xyversioncount_set.create(name=plugin, version="1.4", count=2)
+    ds.xyversioncount_set.create(name="other_plugin", version="1.5", count=7)
+    ds.xyversioncount_set.create(name=plugin, version="2.0", count=3)
+    ds.xyversioncount_set.create(name="other_plugin", version="2.3", count=6)
+    ds.xyversioncount_set.create(name=plugin, version="0.5", count=4)
+    ds.xyversioncount_set.create(name=plugin, version="2.3", count=5)
 
     response = client.get(reverse("pulpanalytics:plugin_stats", kwargs={"plugin": plugin}))
 
@@ -62,15 +61,14 @@ def test_xy_data(db, client, plugin):
 def test_xyz_data(db, client, plugin):
     date = timezone.now().date()
     summary = Summary()
-    xyz_component = summary.xyz_component
-    xyz_component.add(name=plugin, version="1.4.2", count=1)
-    xyz_component.add(name=plugin, version="1.4.3", count=2)
-    xyz_component.add(name="other_plugin", version="1.5.5", count=7)
-    xyz_component.add(name=plugin, version="2.0.4", count=3)
-    xyz_component.add(name="other_plugin", version="2.3.0", count=6)
-    xyz_component.add(name=plugin, version="0.5.1", count=4)
-    xyz_component.add(name=plugin, version="2.3.0", count=5)
-    DailySummary.objects.create(date=date, summary=summary)
+    ds = DailySummary.objects.create(date=date, summary=summary)
+    ds.xyzversioncount_set.create(name=plugin, version="1.4.2", count=1)
+    ds.xyzversioncount_set.create(name=plugin, version="1.4.3", count=2)
+    ds.xyzversioncount_set.create(name="other_plugin", version="1.5.5", count=7)
+    ds.xyzversioncount_set.create(name=plugin, version="2.0.4", count=3)
+    ds.xyzversioncount_set.create(name="other_plugin", version="2.3.0", count=6)
+    ds.xyzversioncount_set.create(name=plugin, version="0.5.1", count=4)
+    ds.xyzversioncount_set.create(name=plugin, version="2.3.0", count=5)
 
     response = client.get(
         reverse("pulpanalytics:plugin_stats", kwargs={"plugin": plugin}) + "?z_stream=1"

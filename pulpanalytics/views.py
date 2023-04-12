@@ -16,7 +16,14 @@ from git import Repo
 from packaging.version import parse as parse_version
 
 from pulpanalytics.analytics_pb2 import Analytics
-from pulpanalytics.models import Component, DailySummary, DeploymentStats, System
+from pulpanalytics.models import (
+    Component,
+    DailySummary,
+    DeploymentStats,
+    System,
+    XYVersionCount,
+    XYZVersionCount,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -118,33 +125,31 @@ def plugin_stats_view(request, plugin):
     end_date = request.GET.get("end_date")
     z_stream = request.GET.get("z_stream")
     labels = []
-    counts = defaultdict(list)
-    qs = DailySummary.objects.order_by("date")
-    if z_stream:
-        qs = qs.prefetch_related("xyzversioncount_set")
-    else:
-        qs = qs.prefetch_related("xyversioncount_set")
+    counts_lists = defaultdict(list)
+    version_count_class = XYZVersionCount if z_stream else XYVersionCount
+    qs = version_count_class.objects.filter(name=plugin)
     if start_date is not None:
-        qs = qs.filter(date__gte=start_date)
+        qs = qs.filter(summary__gte=start_date)
     if end_date is not None:
-        qs = qs.filter(date__lte=end_date)
-    for index, daily_summary in enumerate(qs):
-        if z_stream:
-            plugin_stats = daily_summary.xyzversioncount_set.filter(name=plugin)
-        else:
-            plugin_stats = daily_summary.xyversioncount_set.filter(name=plugin)
-        labels.append(daily_summary.date)
-        for item in plugin_stats:
-            dataset = counts[item.version]
-            while len(dataset) <= index:
-                dataset.append(0)
-            dataset[index] += item.count
-    for dataset in counts.values():
-        while len(dataset) <= index:
-            dataset.append(0)
+        qs = qs.filter(summary__lte=end_date)
+    qs = qs.order_by("summary_id")
+    index = -1
+    date = None
+    for item in qs:
+        if item.summary_id != date:
+            index += 1
+            date = item.summary_id
+            labels.append(date)
+        counts_list = counts_lists[item.version]
+        while len(counts_list) <= index:
+            counts_list.append(0)
+        counts_list[index] += item.count
+    for counts_list in counts_lists.values():
+        while len(counts_list) <= index:
+            counts_list.append(0)
     datasets = [
-        {"label": key, "data": counts[key], "fill": "-1"}
-        for key in sorted(counts.keys(), key=parse_version, reverse=True)
+        {"label": key, "data": counts_lists[key], "fill": "-1"}
+        for key in sorted(counts_lists.keys(), key=parse_version, reverse=True)
     ]
     if datasets:
         datasets[0]["fill"] = "origin"

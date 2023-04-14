@@ -64,6 +64,19 @@ class DeploymentStats(models.Model):
     online_content_app_processes_avg = models.FloatField(null=True, blank=True)
 
 
+class AgeCount(models.Model):
+    summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
+    age = models.PositiveIntegerField()
+    count = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"age={self.age} count={self.count}"
+
+    class Meta:
+        unique_together = (("summary", "age"),)
+        indexes = [models.Index(fields=["summary"])]
+
+
 class PostgresVersionCount(models.Model):
     summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
     version = models.PositiveIntegerField()

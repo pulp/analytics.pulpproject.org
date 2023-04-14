@@ -75,13 +75,11 @@ class Command(BaseCommand):
                 daily_summary.xyzversioncount_set.create(name=name, version=version, count=count)
 
     @staticmethod
-    def _handle_age(systems, summary):
+    def _handle_age(systems, daily_summary):
         age_q = systems.values("age").annotate(count=Count("system_id"))
 
         for entry in age_q:
-            age_count = summary.age_count.add()
-            age_count.age = entry["age"].days
-            age_count.count = entry["count"]
+            daily_summary.agecount_set.create(age=entry["age"].days, count=entry["count"])
 
     @staticmethod
     def _handle_postgresql_version(systems, daily_summary):
@@ -149,11 +147,11 @@ class Command(BaseCommand):
 
             summary = Summary()
             if systems.exists():
-                self._handle_age(systems, summary)
                 self._handle_rbac_stats(persistent_systems, summary)
 
             with transaction.atomic():
                 daily_summary = DailySummary.objects.create(date=next_summary_date, summary=summary)
+                self._handle_age(systems, daily_summary)
                 self._handle_components(persistent_systems, daily_summary)
                 self._handle_postgresql_version(persistent_systems, daily_summary)
                 self._handle_deployment_stats(persistent_systems, daily_summary)

@@ -47,7 +47,7 @@ def test_summary_age(yesterday, db, persistent_min_age_days):
     call_command("summarize")
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
-    assert daily_summary.summary.age_count == [Summary.AgeCount(age=0, count=1)]
+    assert list(daily_summary.agecount_set.values("age", "count")) == [{"age": 0, "count": 1}]
 
 
 def test_summary_worker_count(yesterday, db, persistent_min_age_days):

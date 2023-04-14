@@ -17,6 +17,7 @@ from packaging.version import parse as parse_version
 
 from pulpanalytics.analytics_pb2 import Analytics
 from pulpanalytics.models import (
+    AgeCount,
     Component,
     DailySummary,
     DeploymentStats,
@@ -127,12 +128,11 @@ def plugin_stats_view(request, plugin):
     labels = []
     counts_lists = defaultdict(list)
     version_count_class = XYZVersionCount if z_stream else XYVersionCount
-    qs = version_count_class.objects.filter(name=plugin)
+    qs = version_count_class.objects.filter(name=plugin).order_by("summary_id")
     if start_date is not None:
         qs = qs.filter(summary__gte=start_date)
     if end_date is not None:
         qs = qs.filter(summary__lte=end_date)
-    qs = qs.order_by("summary_id")
     index = -1
     date = None
     for item in qs:
@@ -162,20 +162,20 @@ def demography_view(request):
         return value | {"count": prev["count"] + value["count"]}
 
     date = request.GET.get("date")
-    qs = DailySummary.objects.order_by("date")
+    ds_qs = DailySummary.objects.order_by("date")
     if date is not None:
-        qs = qs.filter(date__lte=date)
-    daily_summary = qs.last()  # TODO prefetch the age related table
+        ds_qs = ds_qs.filter(date__lte=date)
+    daily_summary = ds_qs.last()
     if daily_summary is None:
         return JsonResponse({})
-    raw_data = sorted(daily_summary.summary.age_count, key=lambda i: i.age, reverse=True)
-    if not raw_data:
+    qs = daily_summary.agecount_set.order_by("-age")
+    if not qs:
         # No data available
         return JsonResponse({})
-    age = raw_data[0].age + 1
+    age = qs[0].age + 1
     data = []
     # Fill the gaps and transform to dicts
-    for item in raw_data:
+    for item in qs:
         while age > item.age:
             data.append({"age": age, "count": 0})
             age -= 1
@@ -210,29 +210,33 @@ def systems_by_age_view(request):
     end_date = request.GET.get("end_date")
     bucket = request.GET.get("bucket")
     labels = []
-    counts = defaultdict(list)
-    qs = DailySummary.objects.order_by("date")
+    counts_lists = defaultdict(list)
+    qs = AgeCount.objects.order_by("summary_id")
     if start_date is not None:
-        qs = qs.filter(date__gte=start_date)
+        qs = qs.filter(summary__gte=start_date)
     if end_date is not None:
-        qs = qs.filter(date__lte=end_date)
-    for index, daily_summary in enumerate(qs):
-        age_count = daily_summary.summary.age_count
-        labels.append(daily_summary.date)
-        for item in age_count:
-            if bucket and item.age:
-                age = 1 << (item.age - 1).bit_length()
-            else:
-                age = item.age
-            dataset = counts[age]
-            while len(dataset) <= index:
-                dataset.append(0)
-            dataset[index] += item.count
-    for dataset in counts.values():
-        while len(dataset) <= index:
-            dataset.append(0)
+        qs = qs.filter(summary__lte=end_date)
+    index = -1
+    date = None
+    for item in qs:
+        if item.summary_id != date:
+            index += 1
+            date = item.summary_id
+            labels.append(date)
+        if bucket and item.age:
+            age = 1 << (item.age - 1).bit_length()
+        else:
+            age = item.age
+        counts_list = counts_lists[age]
+        while len(counts_list) <= index:
+            counts_list.append(0)
+        counts_list[index] += item.count
+    for counts_list in counts_lists.values():
+        while len(counts_list) <= index:
+            counts_list.append(0)
     datasets = [
-        {"label": str(key), "data": counts[key], "fill": "-1"} for key in sorted(counts.keys())
+        {"label": str(key), "data": counts_lists[key], "fill": "-1"}
+        for key in sorted(counts_lists.keys())
     ]
     if bucket:
         last_label = 0

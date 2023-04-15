@@ -97,8 +97,9 @@ class Migration(migrations.Migration):
             unique_together={("summary", "name", "version")},
         ),
         migrations.RunSQL(
-            sql="",
+            sql=migrations.RunSQL.noop,
             reverse_sql="SET CONSTRAINTS ALL IMMEDIATE;",
+            elidable=True,
         ),
         migrations.RunPython(
             code=move_version_count_data_up,

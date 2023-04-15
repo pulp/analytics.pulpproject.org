@@ -20,24 +20,21 @@ def test_empty_summary(db, client, measure):
 
 def test_no_data(db, client, measure):
     date = timezone.now().date()
-    summary = Summary()
-    DailySummary.objects.create(date=date, summary=summary)
+    DailySummary.objects.create(date=date, summary=Summary())
 
     response = client.get(reverse("pulpanalytics:rbac_stats", kwargs={"measure": measure}))
 
     assert response.status_code == 200
-    assert response.json() == {"labels": [str(date)], "datasets": []}
+    assert response.json() == {"labels": [], "datasets": []}
 
 
 def test_data(db, client, measure):
     date = timezone.now().date()
-    summary = Summary()
-    stats = getattr(summary.rbac_stats, measure)
-    stats.add(number=4, count=6)
-    stats.add(number=5, count=4)
-    stats.add(number=0, count=6)
-    stats.add(number=3, count=7)
-    DailySummary.objects.create(date=date, summary=summary)
+    ds = DailySummary.objects.create(date=date, summary=Summary())
+    ds.numbercount_set.create(name=measure, number=4, count=6)
+    ds.numbercount_set.create(name=measure, number=5, count=4)
+    ds.numbercount_set.create(name=measure, number=0, count=6)
+    ds.numbercount_set.create(name=measure, number=3, count=7)
 
     response = client.get(reverse("pulpanalytics:rbac_stats", kwargs={"measure": measure}))
 
@@ -55,15 +52,13 @@ def test_data(db, client, measure):
 
 def test_data_bucket(db, client, measure):
     date = timezone.now().date()
-    summary = Summary()
-    stats = getattr(summary.rbac_stats, measure)
-    stats.add(number=4, count=6)
-    stats.add(number=17, count=4)
-    stats.add(number=0, count=6)
-    stats.add(number=3, count=7)
-    stats.add(number=1, count=8)
-    stats.add(number=2, count=9)
-    DailySummary.objects.create(date=date, summary=summary)
+    ds = DailySummary.objects.create(date=date, summary=Summary())
+    ds.numbercount_set.create(name=measure, number=4, count=6)
+    ds.numbercount_set.create(name=measure, number=17, count=4)
+    ds.numbercount_set.create(name=measure, number=0, count=6)
+    ds.numbercount_set.create(name=measure, number=3, count=7)
+    ds.numbercount_set.create(name=measure, number=1, count=8)
+    ds.numbercount_set.create(name=measure, number=2, count=9)
 
     response = client.get(
         reverse("pulpanalytics:rbac_stats", kwargs={"measure": measure}) + "?bucket=1"

@@ -64,6 +64,19 @@ class DeploymentStats(models.Model):
     online_content_app_processes_avg = models.FloatField(null=True, blank=True)
 
 
+class NumberCount(models.Model):
+    """Count of systems having a specific number of items on a day."""
+
+    summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
+    name = models.TextField()
+    number = models.PositiveIntegerField()
+    count = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = (("summary", "name", "number"),)
+        indexes = [models.Index(fields=["summary", "name"])]
+
+
 class AgeCount(models.Model):
     summary = models.ForeignKey(DailySummary, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()

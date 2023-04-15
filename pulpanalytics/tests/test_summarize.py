@@ -181,32 +181,48 @@ def test_summary_rbac(yesterday, db):
     daily_summary = DailySummary.objects.order_by("date").last()
     assert daily_summary
 
-    expected_rbac_stats = Summary.RbacStats(
-        users=[
-            Summary.NumberCount(number=1, count=5),
-        ],
-        groups=[
-            Summary.NumberCount(number=1, count=1),
-            Summary.NumberCount(number=2, count=4),
-        ],
-        domains=[
-            Summary.NumberCount(number=1, count=1),
-            Summary.NumberCount(number=2, count=1),
-            Summary.NumberCount(number=3, count=3),
-        ],
-        custom_access_policies=[
-            Summary.NumberCount(number=1, count=1),
-            Summary.NumberCount(number=2, count=1),
-            Summary.NumberCount(number=3, count=1),
-            Summary.NumberCount(number=4, count=2),
-        ],
-        custom_roles=[
-            Summary.NumberCount(number=1, count=1),
-            Summary.NumberCount(number=2, count=1),
-            Summary.NumberCount(number=3, count=1),
-            Summary.NumberCount(number=4, count=1),
-            Summary.NumberCount(number=5, count=1),
-        ],
-    )
-
-    assert daily_summary.summary.rbac_stats == expected_rbac_stats
+    assert list(
+        daily_summary.numbercount_set.filter(name="users")
+        .order_by("count")
+        .values("number", "count")
+    ) == [
+        {"number": 1, "count": 5},
+    ]
+    assert list(
+        daily_summary.numbercount_set.filter(name="groups")
+        .order_by("count")
+        .values("number", "count")
+    ) == [
+        {"number": 1, "count": 1},
+        {"number": 2, "count": 4},
+    ]
+    assert list(
+        daily_summary.numbercount_set.filter(name="domains")
+        .order_by("count")
+        .values("number", "count")
+    ) == [
+        {"number": 1, "count": 1},
+        {"number": 2, "count": 1},
+        {"number": 3, "count": 3},
+    ]
+    assert list(
+        daily_summary.numbercount_set.filter(name="custom_access_policies")
+        .order_by("count")
+        .values("number", "count")
+    ) == [
+        {"number": 1, "count": 1},
+        {"number": 2, "count": 1},
+        {"number": 3, "count": 1},
+        {"number": 4, "count": 2},
+    ]
+    assert list(
+        daily_summary.numbercount_set.filter(name="custom_roles")
+        .order_by("count")
+        .values("number", "count")
+    ) == [
+        {"number": 1, "count": 1},
+        {"number": 2, "count": 1},
+        {"number": 3, "count": 1},
+        {"number": 4, "count": 1},
+        {"number": 5, "count": 1},
+    ]

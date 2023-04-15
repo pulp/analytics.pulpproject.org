@@ -70,8 +70,9 @@ class Migration(migrations.Migration):
             field=models.PositiveIntegerField(null=True),
         ),
         migrations.RunSQL(
-            sql="",
+            sql=migrations.RunSQL.noop,
             reverse_sql="SET CONSTRAINTS ALL IMMEDIATE;",
+            elidable=True,
         ),
         migrations.RunPython(
             code=fold_service_counts_into_system_up,
@@ -80,7 +81,8 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql="SET CONSTRAINTS ALL IMMEDIATE;",
-            reverse_sql="",
+            reverse_sql=migrations.RunSQL.noop,
+            elidable=True,
         ),
         migrations.DeleteModel(
             name="OnlineContentApps",

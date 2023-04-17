@@ -1,8 +1,5 @@
 from django.db import models
 
-from pulpanalytics.fields import ProtoBufField
-from pulpanalytics.summary_pb2 import Summary
-
 
 class System(models.Model):
     system_id = models.UUIDField()
@@ -47,7 +44,6 @@ class Component(models.Model):
 
 class DailySummary(models.Model):
     date = models.DateField(primary_key=True)
-    summary = ProtoBufField(serializer=Summary)
 
     class Meta:
         verbose_name_plural = "daily summaries"

@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from pulpanalytics.models import DailySummary
-from pulpanalytics.summary_pb2 import Summary
 from pulpanalytics.views import PLUGINS
 
 
@@ -18,8 +17,7 @@ def test_empty_summary(db, client, plugin):
 @pytest.mark.parametrize("plugin", PLUGINS[0:2])
 def test_no_data(db, client, plugin):
     date = timezone.now().date()
-    summary = Summary()
-    DailySummary.objects.create(date=date, summary=summary)
+    DailySummary.objects.create(date=date)
 
     response = client.get(reverse("pulpanalytics:plugin_stats", kwargs={"plugin": plugin}))
 
@@ -33,8 +31,7 @@ def test_no_data(db, client, plugin):
 def test_xy_data(db, client, plugin):
     date1 = timezone.now().date()
     date2 = date1 - timezone.timedelta(days=1)
-    summary = Summary()
-    ds1 = DailySummary.objects.create(date=date1, summary=summary)
+    ds1 = DailySummary.objects.create(date=date1)
     ds1.xyversioncount_set.create(name=plugin, version="1.2", count=1)
     ds1.xyversioncount_set.create(name=plugin, version="1.4", count=2)
     ds1.xyversioncount_set.create(name="other_plugin", version="1.5", count=7)
@@ -42,7 +39,7 @@ def test_xy_data(db, client, plugin):
     ds1.xyversioncount_set.create(name="other_plugin", version="2.3", count=6)
     ds1.xyversioncount_set.create(name=plugin, version="0.5", count=4)
     ds1.xyversioncount_set.create(name=plugin, version="2.3", count=5)
-    ds2 = DailySummary.objects.create(date=date2, summary=summary)
+    ds2 = DailySummary.objects.create(date=date2)
     ds2.xyversioncount_set.create(name=plugin, version="1.2", count=2)
     ds2.xyversioncount_set.create(name=plugin, version="1.3", count=1)
 
@@ -66,8 +63,7 @@ def test_xy_data(db, client, plugin):
 def test_xyz_data(db, client, plugin):
     date1 = timezone.now().date()
     date2 = date1 - timezone.timedelta(days=1)
-    summary = Summary()
-    ds1 = DailySummary.objects.create(date=date1, summary=summary)
+    ds1 = DailySummary.objects.create(date=date1)
     ds1.xyzversioncount_set.create(name=plugin, version="1.4.2", count=1)
     ds1.xyzversioncount_set.create(name=plugin, version="1.4.3", count=2)
     ds1.xyzversioncount_set.create(name="other_plugin", version="1.5.5", count=7)
@@ -75,7 +71,7 @@ def test_xyz_data(db, client, plugin):
     ds1.xyzversioncount_set.create(name="other_plugin", version="2.3.0", count=6)
     ds1.xyzversioncount_set.create(name=plugin, version="0.5.1", count=4)
     ds1.xyzversioncount_set.create(name=plugin, version="2.3.0", count=5)
-    ds2 = DailySummary.objects.create(date=date2, summary=summary)
+    ds2 = DailySummary.objects.create(date=date2)
     ds2.xyzversioncount_set.create(name=plugin, version="1.4.3", count=2)
     ds2.xyzversioncount_set.create(name=plugin, version="1.4.4", count=1)
 

@@ -6,28 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("pulpanalytics", "0001_initial"),
-        ("pulpanalytics", "0002_system_first_seen"),
-        ("pulpanalytics", "0003_system_unique_system_checkin_per_day"),
-        ("pulpanalytics", "0004_alter_dailysummary_summary"),
-        ("pulpanalytics", "0005_system_postgresql_version"),
-        ("pulpanalytics", "0006_system_custom_access_policies_system_custom_roles_and_more"),
-        ("pulpanalytics", "0007_alter_system_postgresql_version"),
-        ("pulpanalytics", "0008_DATA_fix_rbac_stats"),
-        ("pulpanalytics", "0009_remove_onlineworkers_system_system_content_app_hosts_and_more"),
-        ("pulpanalytics", "0010_remove_dailysummary_id_alter_dailysummary_date"),
-        ("pulpanalytics", "0010_postgresversioncount"),
-        ("pulpanalytics", "0012_deploymentstats"),
-        ("pulpanalytics", "0013_postgresversioncount_pulpanalyti_summary_3ad8a0_idx"),
-        ("pulpanalytics", "0014_xyzversioncount_xyversioncount_and_more"),
-        ("pulpanalytics", "0015_alter_component_unique_together_and_more"),
-        ("pulpanalytics", "0016_agecount_agecount_pulpanalyti_summary_e1ed61_idx_and_more"),
-        ("pulpanalytics", "0017_numbercount_and_more"),
-        ("pulpanalytics", "0018_remove_dailysummary_summary"),
-        ("pulpanalytics", "0019_alter_agecount_unique_together_and_more"),
-    ]
-
     initial = True
 
     dependencies = []

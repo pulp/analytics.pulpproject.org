@@ -21,6 +21,7 @@ from pulpanalytics.models import (
     Component,
     DailySummary,
     DeploymentStats,
+    NumberCount,
     System,
     XYVersionCount,
     XYZVersionCount,
@@ -260,29 +261,33 @@ def rbac_stats_view(request, measure):
     end_date = request.GET.get("end_date")
     bucket = request.GET.get("bucket")
     labels = []
-    counts = defaultdict(list)
-    qs = DailySummary.objects.order_by("date")
+    counts_lists = defaultdict(list)
+    qs = NumberCount.objects.filter(name=measure).order_by("summary_id")
     if start_date is not None:
-        qs = qs.filter(date__gte=start_date)
+        qs = qs.filter(summary_id__gte=start_date)
     if end_date is not None:
-        qs = qs.filter(date__lte=end_date)
-    for index, daily_summary in enumerate(qs):
-        rbac_stats = daily_summary.summary.rbac_stats
-        labels.append(daily_summary.date)
-        for item in getattr(rbac_stats, measure):
-            if bucket and item.number:
-                number = 1 << (item.number - 1).bit_length()
-            else:
-                number = item.number
-            dataset = counts[number]
-            while len(dataset) <= index:
-                dataset.append(0)
-            dataset[index] += item.count
-    for dataset in counts.values():
-        while len(dataset) <= index:
-            dataset.append(0)
+        qs = qs.filter(summary_id__lte=end_date)
+    index = -1
+    date = None
+    for item in qs:
+        if item.summary_id != date:
+            index += 1
+            date = item.summary_id
+            labels.append(date)
+        if bucket and item.number:
+            number = 1 << (item.number - 1).bit_length()
+        else:
+            number = item.number
+        counts_list = counts_lists[number]
+        while len(counts_list) <= index:
+            counts_list.append(0)
+        counts_list[index] += item.count
+    for counts_list in counts_lists.values():
+        while len(counts_list) <= index:
+            counts_list.append(0)
     datasets = [
-        {"label": str(key), "data": counts[key], "fill": "-1"} for key in sorted(counts.keys())
+        {"label": str(key), "data": counts_lists[key], "fill": "-1"}
+        for key in sorted(counts_lists.keys())
     ]
     if bucket:
         last_label = 0

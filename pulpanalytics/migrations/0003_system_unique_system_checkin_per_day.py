@@ -28,10 +28,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(code=remove_duplicates, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            code=remove_duplicates,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
         migrations.RunSQL(
-            "SET CONSTRAINTS ALL IMMEDIATE", reverse_sql=migrations.RunSQL.noop
-        ),  # Flush pending tirggers
+            sql="SET CONSTRAINTS ALL IMMEDIATE",
+            reverse_sql=migrations.RunSQL.noop,
+            elidable=True,
+        ),
         migrations.AddConstraint(
             model_name="system",
             constraint=models.UniqueConstraint(

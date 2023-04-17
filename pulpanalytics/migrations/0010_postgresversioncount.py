@@ -50,6 +50,11 @@ class Migration(migrations.Migration):
                 "unique_together": {("summary", "version")},
             },
         ),
+        migrations.RunSQL(
+            sql="",
+            reverse_sql="SET CONSTRAINTS ALL IMMEDIATE;",
+            elidable=True,
+        ),
         migrations.RunPython(
             code=move_postgresql_version_data_up,
             reverse_code=move_postgresql_version_data_down,

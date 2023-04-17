@@ -38,7 +38,9 @@ class Component(models.Model):
         return f"SystemID={self.system.system_id}, Name={self.name}, Version={self.version}"
 
     class Meta:
-        unique_together = [("system", "name")]
+        constraints = [
+            models.UniqueConstraint("system", "name", name="%(app_label)s_%(class)s_uniquenes")
+        ]
         indexes = [models.Index(fields=["name"])]
 
 
@@ -69,7 +71,11 @@ class NumberCount(models.Model):
     count = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = (("summary", "name", "number"),)
+        constraints = [
+            models.UniqueConstraint(
+                "summary", "name", "number", name="%(app_label)s_%(class)s_uniquenes"
+            )
+        ]
         indexes = [models.Index(fields=["summary", "name"])]
 
 
@@ -82,7 +88,9 @@ class AgeCount(models.Model):
         return f"age={self.age} count={self.count}"
 
     class Meta:
-        unique_together = (("summary", "age"),)
+        constraints = [
+            models.UniqueConstraint("summary", "age", name="%(app_label)s_%(class)s_uniquenes")
+        ]
         indexes = [models.Index(fields=["summary"])]
 
 
@@ -111,7 +119,9 @@ class PostgresVersionCount(models.Model):
         return f"PostgreSQL version {self.pretty_version} date={self.summary_id} count={self.count}"
 
     class Meta:
-        unique_together = (("summary", "version"),)
+        constraints = [
+            models.UniqueConstraint("summary", "version", name="%(app_label)s_%(class)s_uniquenes")
+        ]
         indexes = [models.Index(fields=["summary"])]
 
 
@@ -122,7 +132,11 @@ class XYVersionCount(models.Model):
     count = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = (("summary", "name", "version"),)
+        constraints = [
+            models.UniqueConstraint(
+                "summary", "name", "version", name="%(app_label)s_%(class)s_uniquenes"
+            )
+        ]
         indexes = [models.Index(fields=["summary", "name"])]
 
 
@@ -133,5 +147,9 @@ class XYZVersionCount(models.Model):
     count = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = (("summary", "name", "version"),)
+        constraints = [
+            models.UniqueConstraint(
+                "summary", "name", "version", name="%(app_label)s_%(class)s_uniquenes"
+            )
+        ]
         indexes = [models.Index(fields=["summary", "name"])]

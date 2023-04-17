@@ -2,7 +2,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from pulpanalytics.models import DailySummary
-from pulpanalytics.summary_pb2 import Summary
 
 
 def test_systems_by_age_empty(db, client):
@@ -14,8 +13,7 @@ def test_systems_by_age_empty(db, client):
 
 def test_systems_by_age_no_data(db, client):
     date = timezone.now().date()
-    summary = Summary()
-    DailySummary.objects.create(date=date, summary=summary)
+    DailySummary.objects.create(date=date)
 
     response = client.get(reverse("pulpanalytics:systems_by_age"))
 
@@ -25,8 +23,7 @@ def test_systems_by_age_no_data(db, client):
 
 def test_systems_by_age_data(db, client):
     date = timezone.now().date()
-    summary = Summary()
-    daily_summary = DailySummary.objects.create(date=date, summary=summary)
+    daily_summary = DailySummary.objects.create(date=date)
     daily_summary.agecount_set.create(age=2, count=1)
     daily_summary.agecount_set.create(age=1, count=2)
     daily_summary.agecount_set.create(age=3, count=3)
@@ -70,8 +67,7 @@ def test_demography_empty(db, client):
 
 def test_demography_no_data(db, client):
     date = timezone.now().date()
-    summary = Summary()
-    DailySummary.objects.create(date=date, summary=summary)
+    DailySummary.objects.create(date=date)
 
     response = client.get(reverse("pulpanalytics:demography"))
 
@@ -81,8 +77,7 @@ def test_demography_no_data(db, client):
 
 def test_demography_data(db, client):
     date = timezone.now().date()
-    summary = Summary()
-    daily_summary = DailySummary.objects.create(date=date, summary=summary)
+    daily_summary = DailySummary.objects.create(date=date)
     daily_summary.agecount_set.create(age=2, count=1)
     daily_summary.agecount_set.create(age=1, count=2)
     daily_summary.agecount_set.create(age=3, count=3)
@@ -134,8 +129,7 @@ def test_pg_version_empty(db, client):
 
 def test_pg_version_no_data(db, client):
     date = timezone.now().date()
-    summary = Summary()
-    DailySummary.objects.create(date=date, summary=summary)
+    DailySummary.objects.create(date=date)
 
     response = client.get(reverse("pulpanalytics:postgresql_versions"))
 
@@ -145,8 +139,7 @@ def test_pg_version_no_data(db, client):
 
 def test_pg_version_data(db, client):
     date = timezone.now().date()
-    summary = Summary()
-    daily_summary = DailySummary.objects.create(date=date, summary=summary)
+    daily_summary = DailySummary.objects.create(date=date)
     daily_summary.postgresversioncount_set.create(version=90105, count=1)
     daily_summary.postgresversioncount_set.create(version=0, count=2)
     daily_summary.postgresversioncount_set.create(version=100001, count=3)

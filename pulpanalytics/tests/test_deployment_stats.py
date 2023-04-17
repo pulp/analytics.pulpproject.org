@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from pulpanalytics.models import DailySummary, DeploymentStats
-from pulpanalytics.summary_pb2 import Summary
 
 
 @pytest.fixture(params=["worker", "content_app"])
@@ -28,8 +27,9 @@ def test_deployment_stats_empty(db, client, component):
 
 def test_deployment_stats_no_data(db, client, component):
     date = timezone.now().date()
-    summary = Summary()
-    DailySummary.objects.create(date=date, summary=summary)
+    DailySummary.objects.create(
+        date=date,
+    )
 
     response = client.get(
         reverse("pulpanalytics:deployment_stats", kwargs={"component": component})
@@ -47,8 +47,7 @@ def test_deployment_stats_no_data(db, client, component):
 
 def test_deployment_stats_none_data(db, client, component):
     date = timezone.now().date()
-    summary = Summary()
-    daily_summary = DailySummary.objects.create(date=date, summary=summary)
+    daily_summary = DailySummary.objects.create(date=date)
     DeploymentStats.objects.create(summary=daily_summary)
 
     response = client.get(
@@ -67,8 +66,7 @@ def test_deployment_stats_none_data(db, client, component):
 
 def test_deployment_stats_data(db, client, component):
     date = timezone.now().date()
-    summary = Summary()
-    daily_summary = DailySummary.objects.create(date=date, summary=summary)
+    daily_summary = DailySummary.objects.create(date=date)
     DeploymentStats.objects.create(
         summary=daily_summary,
         online_worker_processes_avg=1.5,

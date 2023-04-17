@@ -9,7 +9,6 @@ from django.db.models import Avg, Count
 from django.db.models.functions import TruncDay
 
 from pulpanalytics.models import Component, DailySummary, DeploymentStats, System
-from pulpanalytics.summary_pb2 import Summary
 
 CLEANUP_AFTER_N_DAYS = 14
 
@@ -127,10 +126,8 @@ class Command(BaseCommand):
                 age__gte=timedelta(days=settings.PERSISTENT_MIN_AGE_DAYS)
             )
 
-            summary = Summary()
-
             with transaction.atomic():
-                daily_summary = DailySummary.objects.create(date=next_summary_date, summary=summary)
+                daily_summary = DailySummary.objects.create(date=next_summary_date)
                 self._handle_age(systems, daily_summary)
                 self._handle_components(persistent_systems, daily_summary)
                 self._handle_postgresql_version(persistent_systems, daily_summary)

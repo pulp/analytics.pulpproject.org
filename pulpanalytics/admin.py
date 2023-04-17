@@ -6,23 +6,29 @@ from django.template.response import TemplateResponse
 from django.urls import path
 
 from pulpanalytics.models import (
+    AgeCount,
     Component,
     DailySummary,
     DeploymentStats,
+    NumberCount,
     PostgresVersionCount,
     System,
+    XYVersionCount,
+    XYZVersionCount,
 )
 
+admin.site.register(AgeCount)
 admin.site.register(Component)
-admin.site.register(System)
-admin.site.register(PostgresVersionCount)
 admin.site.register(DeploymentStats)
+admin.site.register(NumberCount)
+admin.site.register(PostgresVersionCount)
+admin.site.register(System)
+admin.site.register(XYVersionCount)
+admin.site.register(XYZVersionCount)
 
 
 @admin.register(DailySummary)
 class DailySummaryAdmin(admin.ModelAdmin):
-    readonly_fields = ("summary",)
-
     def get_urls(self):
         return [
             path("add/", self.admin_site.admin_view(self.summarize)),

@@ -3,5 +3,5 @@ GitPython==3.1.37
 gunicorn==21.2.0
 protobuf==4.24.4
 psycopg==3.1.12
-whitenoise==6.5.0
+whitenoise==6.6.0
 packaging==23.2

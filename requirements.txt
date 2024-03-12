@@ -4,4 +4,4 @@ gunicorn==21.2.0
 protobuf==4.25.3
 psycopg==3.1.18
 whitenoise==6.6.0
-packaging==23.2
+packaging==24.0

@@ -2,6 +2,6 @@ Django==4.2.20
 GitPython==3.1.44
 gunicorn==23.0.0
 protobuf==5.29.3
-psycopg==3.2.5
+psycopg==3.2.6
 whitenoise==6.9.0
 packaging==24.2

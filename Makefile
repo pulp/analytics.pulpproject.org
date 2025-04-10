@@ -1,4 +1,4 @@
-black:
+format:
 	isort .
 	black .
 
@@ -8,4 +8,4 @@ lint:
 	flake8
 	@echo "🙊 Code 🙈 LGTM 🙉 !"
 
-.PHONY: black lint
+.PHONY: format lint

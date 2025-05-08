@@ -1,4 +1,4 @@
-Django==4.2.20
+Django==4.2.21
 GitPython==3.1.44
 gunicorn==23.0.0
 protobuf==6.30.2

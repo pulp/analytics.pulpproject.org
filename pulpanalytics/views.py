@@ -55,7 +55,10 @@ class LogAndDropData(IntegrityError):
 
 @lru_cache(maxsize=1)
 def _get_git_revision():
-    return Repo().commit().hexsha
+    try:
+        return Repo().commit().hexsha
+    except Exception as e:
+        return str(e)
 
 
 def _check_component_version(version):

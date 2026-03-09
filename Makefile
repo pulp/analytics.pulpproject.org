@@ -1,11 +1,16 @@
+.PHONY: format
 format:
-	isort .
-	black .
+	.ci/sync_requirements.py --fix
+	ruff format
+	ruff check --fix
 
+.PHONY: lint
 lint:
-	black --diff --check .
-	isort -c --diff .
-	flake8
+	.ci/sync_requirements.py
+	ruff format --check --diff
+	ruff check --diff
 	@echo "🙊 Code 🙈 LGTM 🙉 !"
 
-.PHONY: format lint
+.PHONY: test
+test:
+	pytest -v

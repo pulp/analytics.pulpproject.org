@@ -1,9 +1,37 @@
+[project]
+name = "analytics-pulpproject-org"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django==5.2.12",
+    "gitpython==3.1.46",
+    "gunicorn==25.1.0",
+    "packaging==26.0",
+    "protobuf==7.34.0",
+    "psycopg==3.3.3",
+    "whitenoise==6.12.0",
+]
+
+[dependency-groups]
+dev = [
+  {include-group = "lint"},
+  {include-group = "test"},
+]
+lint = [
+    "ruff>=0.15.5",
+]
+test = [
+    "pytest-django==4.12.0",
+]
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "app.settings"
 
-[tool.black]
+[tool.ruff]
 line-length = 100
+extend-exclude = ["*_pb2.py"]
 
-[tool.isort]
-profile = "black"
-line_length = 100
+[tool.ruff.lint]
+extend-select = ["I"]

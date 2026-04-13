@@ -20,7 +20,7 @@ dev = [
   {include-group = "test"},
 ]
 lint = [
-    "ruff>=0.15.5",
+    "ruff>=0.15.10",
 ]
 test = [
     "pytest-django==4.12.0",

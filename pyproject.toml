@@ -10,7 +10,7 @@ dependencies = [
     "gunicorn==25.3.0",
     "packaging==26.2",
     "protobuf==7.34.1",
-    "psycopg==3.3.3",
+    "psycopg==3.3.4",
     "whitenoise==6.12.0",
 ]
 

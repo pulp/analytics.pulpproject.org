@@ -1,5 +1,5 @@
 django==5.2.16
-gitpython==3.1.55
+gitpython==3.1.57
 gunicorn==26.0.0
 packaging==26.2
 protobuf==7.35.1
